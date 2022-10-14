@@ -1,0 +1,468 @@
+<apex:page standardController="Quote__c" tabStyle="Quote__c" extensions="SLIQuickAddController" id="thePage" action="{!init}">
+    
+    <apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-1.6.2.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.css')}"/>
+    
+    <script type="text/javascript">
+       var j$ = jQuery.noConflict();
+    </script>
+    
+    <style>
+        .noHeader {
+            display:none;
+        }
+    </style>    
+    
+    <apex:form id="quoteDetailForm">
+         <apex:pageMessages />
+        <apex:outputPanel id="quoteDetailPanel">
+            <apex:actionFunction name="EmailCSR" action="{!emailCSR}" rerender="" />
+            <apex:actionFunction name="PublishToSAP" action="{!publishToSAP}"  rerender="quoteDetailForm, quoteContactForm, qliRelatedList" />
+            <apex:actionFunction name="MarkAccepted" action="{!markAccepted}" rerender=""/>
+            <apex:actionFunction name="GoToUD" action="{!goToDocumentPage}" rerender="" />
+            <!-- 
+            <apex:actionFunction rerender="thePage" name="CreateNewVersion" action="{!createNewVersionOfQuote}"/>-->
+            <apex:actionFunction rerender="" name="ReactivateVersion" action="{!reactivateVersionOfQuote}"/>
+            <apex:outputPanel id="quotePanel">
+            <apex:detail subject="{!Quote__c.Id}" title="{!$Label.True}" relatedListHover="true" id="quoteDetail" />  
+            </apex:outputPanel>     
+        </apex:outputPanel>
+    </apex:form>
+    
+ 
+
+    <apex:form id="qliRelatedList">
+        <apex:pageBlock id="qli" title="{!IF(Readmode, $Label.QGP_QLI, $Label.QGP_QLI_Edit)}" mode="edit">
+            <apex:pageBlockButtons rendered="{!AND(areQli, OR(pageRecord.Active_Quote__c,pageRecord.EOY_Scenario__c), NOT(pageRecord.Approval_Status__c = 'Approved'), NOT(pageRecord.Approval_Status__c = 'Pending') )}">
+                <apex:commandbutton value="{!$Label.Edit_All_Items}" rendered="{!Readmode}" rerender="qliRelatedList,volumetricInputForm" action="{!gotoeditmode}" status="changingmode"/>
+                <apex:commandbutton value="{!$Label.Button_Save}" rendered="{!NOT(Readmode)}" rerender="qliRelatedList,volumetricInputForm,quoteDetailForm,pAndLChart"  action="{!SLIsave}" status="changingmode"/>
+                <apex:commandbutton value="{!$Label.Save_and_Continue}" rendered="{!NOT(Readmode)}" rerender="qliRelatedList,volumetricInputForm,quoteDetailForm,pAndLChart"  action="{!SLIsaveandedit}" status="changingmode"/>
+                <apex:commandbutton value="{!$Label.Delete}" rendered="{!NOT(Readmode)}" rerender="qliRelatedList,volumetricInputForm,quoteDetailForm,pAndLChart"  action="{!deleteSLIS}" status="changingmode" onclick="if (confirm('Are you sure you want to delete the selected Line Items?') != 1) return false;"/>
+                <apex:commandbutton value="{!$Label.Button_Cancel}" rendered="{!NOT(Readmode)}" rerender="qliRelatedList,volumetricInputForm"  action="{!gotoreadmode}" status="changingmode"/>
+                &nbsp;&nbsp;&nbsp;<apex:actionstatus id="changingmode" starttext="{!$Label.Edit_Status_Start}" stoptext=""/> 
+            </apex:pageBlockButtons>
+            <apex:outputPanel rendered="{!AND(Readmode,areQli, OR(hasPrev, hasNext))}">
+                <br />&nbsp;
+                <apex:outputLabel value="{!$Label.Previous}" rendered="{!NOT(hasPrev)}" />
+                <apex:commandLink action="{!prevPage}" rerender="qliRelatedList" value="{!$Label.Previous}" rendered="{!hasPrev}" status="paginationStatus2" />                
+                &nbsp;|&nbsp;
+                <apex:outputLabel value="{!$Label.Next}" rendered="{!NOT(hasNext)}" />
+                <apex:commandLink action="{!nextPage}" rerender="qliRelatedList" value="{!$Label.Next}" rendered="{!hasNext}" status="paginationStatus2" />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;({!$Label.Page}&nbsp;{!getCurrentPageNumber}&nbsp;/&nbsp;{!getTotalPages})
+                &nbsp;<apex:actionStatus id="paginationStatus2" startText="{!$Label.Edit_Status_Start}" stopText="" />
+                <br /><br />    
+            </apex:outputPanel>
+            <apex:outputLabel value="{!$Label.RL_No_Records}" rendered="{!NOT(areQli)}" styleClass="noRowsHeader" />
+            <style>
+                div.hideCurrDate span.dateInput span.dateFormat {
+                   display:none;
+                }
+            </style>            
+            <apex:pageBlockTable value="{!currentPageOfRecords}" var="item" rendered="{!areQli}">
+                <apex:column rendered="{!not(And(Readmode, OR(pageRecord.EOY_Scenario__c,pageRecord.Active_Quote__c)))}">
+                    <apex:inputCheckbox value="{!item.deleteItem}" styleClass="toDelSel" />
+                    <apex:facet name="header">
+                        <input type="checkbox" id="selectAll" onchange="toggleChecked(this.checked);" onclick="toggleChecked(this.checked);" />
+                        <script type="text/javascript" language="javascript">
+                            function toggleChecked(status) {
+                                j$(".toDelSel").each(function() {
+                                    j$(this).attr("checked", status);
+                                })
+                            }
+                        </script>
+                    </apex:facet>
+                </apex:column>
+                <apex:column rendered="{!And(Readmode, OR(pageRecord.EOY_Scenario__c,pageRecord.Active_Quote__c))}">
+                    <apex:facet name="header">
+                        <apex:actionStatus id="savedstatus" startText="{!$Label.QGP_Saving}"/>
+                    </apex:facet>
+                    <apex:commandLink status="editstatus" action="{!editQLI}" rerender="qliRelatedList, quoteDetailForm" rendered="{!AND(NOT(pageRecord.Approval_Status__c = 'Pending'),NOT(pageRecord.Approval_Status__c = 'Approved'))}">
+                        <apex:param name="editQLI" value="{!item.item.Id}"/>
+                        <apex:actionStatus id="editstatus" startText="{!$Label.QGP_Loading}" stopText="{!$Label.Button_Edit}"/>
+                    </apex:commandLink>
+                    <apex:outputLabel value=" | " rendered="{!AND(NOT(pageRecord.Approval_Status__c = 'Pending'),NOT(pageRecord.Approval_Status__c = 'Approved'))}" />
+                    <apex:commandLink status="deletestatus" action="{!deleteQLI}" rerender="qliRelatedList, quoteDetailForm, pAndLChart, volumetricInputForm" rendered="{!AND(NOT(pageRecord.Approval_Status__c = 'Pending'),NOT(pageRecord.Approval_Status__c = 'Approved'))}">
+                        <apex:param name="deleteQLI" value="{!item.item.Id}"/>
+                        <apex:actionStatus id="deletestatus" startText="{!$Label.QGP_Deleting}" stopText="{!$Label.Button_Delete}" />
+                    </apex:commandLink>
+                </apex:column>          
+                <apex:column value="{!item.item.Material_Item__r.PHL1__c}"/>
+                <apex:column value="{!item.item.Material_Item__c}"/>
+               
+                <apex:column style="width:8.0%;" headerValue="{!$Label.Annual_Qty_per_1}">
+                    <apex:outputfield value="{!item.item.Quantity__c}" rendered="{!readmode}"/>
+                    <apex:inputfield value="{!item.item.Quantity__c}" rendered="{!Not(readmode)}" style="width:75px;"/>
+                </apex:column>
+                  <apex:column value="{!item.item.UoM__c}"/>
+                <apex:column style="background-color:{!IF(item.item.Floor_Price__c > item.item.Actual_Price__c, '#FF0000','background-color:#FFFFFF;')}">
+                    <apex:facet name="header">
+                        {!$ObjectType.Quote_Line_Item__c.fields.Actual_Price__c.label}
+                    </apex:facet> 
+                    <c:AdjustCurrencyComponent ConversionValue="{!item.item.Actual_Price__c}" rendered="{!readmode}" />
+                    <apex:inputfield value="{!item.item.Actual_Price__c}" rendered="{!Not(readmode)}" style="width:75px;"/>
+                </apex:column>
+                <apex:column value="{!item.item.Per__c}" />
+                <apex:column value="{!item.item.UoM__c}"/>
+                <apex:column style="background-color:{!IF(item.item.Floor_Price__c > item.item.Actual_Price__c, '#FF0000','background-color:#FFFFFF;')}">
+                    <apex:facet name="header">
+                        {!$ObjectType.Quote_Line_Item__c.fields.Total_Price__c.label}
+                    </apex:facet>
+                    <c:AdjustCurrencyComponent ConversionValue="{!item.item.Total_Price__c}" />              
+                </apex:column>
+                <apex:column value="{!item.item.Floor_Price__c}" />
+                <apex:column value="{!item.item.Target_Price__c}" />
+               
+                <apex:column headerValue="{!$Label.SLIQuickAddExpiration}">
+                    <apex:outputfield value="{!item.item.Price_Valid_To__c}" rendered="{!readmode}"/>
+                    <div class="hideCurrDate">
+                        <apex:inputfield value="{!item.item.Price_Valid_To__c}" rendered="{!Not(readmode)}"/>
+                    </div>
+                </apex:column>
+                <apex:column headerValue="{!$Label.Lock}">
+                    <apex:inputfield value="{!item.item.Lock_Expiration_Date__c}" rendered="{!Not(readmode)}"/>
+                    <apex:outputpanel rendered="{!AND(readmode, item.item.Lock_Expiration_Date__c)}">
+                        <img src="/img/func_icons/util/lock12.gif" alt="Lock" />
+                    </apex:outputpanel>
+                </apex:column>
+                <apex:column value="{!item.item.Formula_Flag__c}" />
+                <apex:column value="{!item.item.Extended__c}" headerValue="At Site" />
+               <!--   <apex:column value="{!item.item.Cost__c}" />
+                <apex:column value="{!item.item.Total_Cost__c}" />-->
+            </apex:pageBlockTable>
+            <apex:outputPanel rendered="{!AND(Readmode,areQli, OR(hasPrev, hasNext))}">
+                <br />&nbsp;
+                <apex:outputLabel value="{!$Label.Previous}" rendered="{!NOT(hasPrev)}" />
+                <apex:commandLink action="{!prevPage}" rerender="qliRelatedList" value="{!$Label.Previous}" rendered="{!hasPrev}" status="paginationStatus" />                
+                &nbsp;|&nbsp;
+                <apex:outputLabel value="{!$Label.Next}" rendered="{!NOT(hasNext)}" />
+                <apex:commandLink action="{!nextPage}" rerender="qliRelatedList" value="{!$Label.Next}" rendered="{!hasNext}" status="paginationStatus" />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;({!$Label.Page}&nbsp;{!getCurrentPageNumber}&nbsp;/&nbsp;{!getTotalPages})
+                &nbsp;<apex:actionStatus id="paginationStatus" startText="{!$Label.Edit_Status_Start}" stopText="" />           
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:form id="bundledForm">
+        <apex:pageBlock id="bundledList" title="{!$Label.QGP_Bundled}" mode="edit" rendered="{!areBs}">
+            <apex:pageBlockTable value="{!bundledServices}" var="item" rendered="{!areBs}">
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:actionStatus id="savedstatus" startText="{!$Label.QGP_Saving}"/>
+                    </apex:facet>
+                    <apex:commandLink status="editstatus2" action="{!editQLI}" rerender="bundledList" rendered="{!AND(NOT(pageRecord.Approval_Status__c = $Label.QGP_Pending_Approval),NOT(pageRecord.Approval_Status__c = $Label.Quote_Approved))}">
+                        <apex:param name="editQLI" value="{!item.Id}"/>
+                        <apex:actionStatus id="editstatus2" startText="{!$Label.QGP_Loading}" stopText="{!$Label.Button_Edit}"/>
+                    </apex:commandLink>
+                    <apex:outputLabel value=" | " rendered="{!AND(NOT(pageRecord.Approval_Status__c = $Label.QGP_Pending_Approval),NOT(pageRecord.Approval_Status__c = $Label.Quote_Approved))}" />
+                    <apex:commandLink status="deletestatus2" action="{!deleteQLI}" rerender="bundledList, pAndLChart, volumetricInputForm" rendered="{!AND(NOT(pageRecord.Approval_Status__c = $Label.QGP_Pending_Approval),NOT(pageRecord.Approval_Status__c = $Label.Quote_Approved))}">
+                        <apex:param name="deleteQLI" value="{!item.Id}"/>
+                        <apex:actionStatus id="deletestatus2" startText="{!$Label.QGP_Deleting}" stopText="{!$Label.Button_Delete}"/>
+                    </apex:commandLink>
+                </apex:column>              
+                <apex:column value="{!item.Material_Item__r.PHL1__c}"/>
+                <apex:column value="{!item.Material_Item__c}"/>
+                <apex:column style="width:8.0%;" value="{!item.Quantity__c}"/>
+                 <apex:column value="{!item.UoM__c}"/>
+                <apex:column >
+                    <apex:facet name="header">
+                        {!$ObjectType.Quote_Line_Item__c.fields.Actual_Price__c.label}
+                    </apex:facet>
+                    <c:AdjustCurrencyComponent ConversionValue="{!item.Actual_Price__c}" />
+                </apex:column>
+                <apex:column value="{!item.Per__c}" />
+                <apex:column value="{!item.UoM__c}"/>
+                <apex:column >
+                    <apex:facet name="header">
+                        {!$ObjectType.Quote_Line_Item__c.fields.Total_Price__c.label}
+                    </apex:facet>
+                    <c:AdjustCurrencyComponent ConversionValue="{!item.Total_Price__c}" />              
+                </apex:column>
+                <apex:column value="{!item.Extended__c}" headerValue="At Site" />
+            </apex:pageBlockTable>
+            <apex:outputLabel value="{!$Label.RL_No_Records}" rendered="{!NOT(areBs)}" styleClass="noRowsHeader" />      
+        </apex:pageblock>
+    </apex:form>
+
+
+
+    <apex:form id="volumetricInputForm">
+        <apex:pageMessages id="volumetricErrors" />
+        <apex:pageBlock id="volumetricList" title="{!$Label.QGP_Volumetric_Price}" mode="edit" rendered="{!volumetricDeal}">
+            <apex:pageBlockTable value="{!fakeList}" var="dontUseThis" id="volum">
+                <apex:column headerValue="{!$ObjectType.Quote__c.fields.Volume_to_be_Blasted__c.label}">
+                    <apex:outputLabel value="{!ROUND(pageRecord.Volume_to_be_Blasted__c,0)}" />
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.Quote__c.fields.Volumetric_Parent_Product__c.label}">
+                    <apex:outputField value="{!pageRecord.Volumetric_Parent_Product__c}" />
+                </apex:column>
+                <apex:column headerValue="{!$Label.QGP_Allocated_Price}">
+                    <apex:inputText value="{!allocatedPrice}" rendered="{!AND(volumetricDeal, (OR(pageRecord.EOY_Scenario__c,pageRecord.Active_Quote__c)),NOT(pageRecord.Approval_Status__c = 'Approved'),NOT(pageRecord.Approval_Status__c = 'Pending'))}" />
+                </apex:column>      
+                <apex:column headerValue="{!$Label.QGP_Calculated_Price}">
+                    <c:AdjustCurrencyComponent ConversionValue="{!pageRecord.Calculated_Price__c}" />
+                </apex:column>
+                <apex:column headerValue="{!$ObjectType.Quote__c.fields.Volumetric_Per__c.label}">
+                    <apex:outputField value="{!pageRecord.Volumetric_Per__c}" />
+                </apex:column>              
+                <apex:column headerValue="{!$ObjectType.Quote__c.fields.Volumetric_Parent_Product_UoM__c.label}">
+                    <apex:outputField value="{!pageRecord.Volumetric_Parent_Product_UoM__c}" />
+                </apex:column>                                                      
+                <apex:column headerValue="{!$Label.Allocate}">
+                    <apex:commandButton value="{!$Label.Allocate}" rendered="{!AND(Readmode, volumetricDeal, (OR(pagerecord.EOY_Scenario__c,pageRecord.Active_Quote__c)),NOT(pageRecord.Approval_Status__c = 'Approved'),NOT(pageRecord.Approval_Status__c = 'Pending'))}" action="{!allocatePriceAcrossQLI}" status="volUpdate" rerender="volumetricErrors, volumetricList, quoteDetailForm, qliRelatedList, bundledForm" />
+                    <apex:actionStatus startText="   {!$Label.QGP_Updating}" id="volUpdate" />              
+                </apex:column>              
+            </apex:pageBlockTable>
+        </apex:pageblock>
+    </apex:form>
+
+<a name="DETAILS"></a>
+
+    <apex:form >
+        <apex:pageBlock title="{!$Label.Quick_Add_Add_SLI}" id="controlBlock">
+            <apex:pageBlockButtons >
+                <apex:commandButton rendered="{!AND((OR(pageRecord.EOY_Scenario__c,pageRecord.Active_Quote__c)),NOT(pageRecord.Approval_Status__c = 'Approved'),NOT(pageRecord.Approval_Status__c = 'Pending'))}" value="Add Selected" action="{!addSelected}" rerender="mainPanel, qliRelatedList, quoteDetailForm, controlBlock, formulaPanel, errors, pAndLChart, volumetricInputForm" status="addingSelected" />
+                <apex:commandButton rendered="{!AND((OR(pageRecord.EOY_Scenario__c,pageRecord.Active_Quote__c)), NOT(pageRecord.Approval_Status__c = 'Approved'),NOT(pageRecord.Approval_Status__c = 'Pending'))}" value="Advanced Add" action="{!goToAdvancedAdd}" />
+                <apex:actionStatus startText="{!$Label.Quick_Add_SLI_Now}" id="addingSelected" />
+            </apex:pageBlockButtons>
+            <apex:pageMessages id="errors" />
+            <apex:pageBlockSection title="{!$Label.Quick_Add_Standard_SLI}" collapsible="false" />
+            <br />
+            <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.PHL1__c.label}:  " />    
+            <apex:selectList value="{!selectedPHL1}" size="1">
+                <apex:selectOptions value="{!pHL1Options}" />
+                <apex:actionSupport action="{!setPHL2andPHL3ToNone}" event="onchange" rerender="phl2SelectList"  />
+            </apex:selectList>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <apex:outputLabel value="   {!$ObjectType.Material_Item__c.fields.PHL2__c.label}:  " />
+            <apex:selectList value="{!selectedPHL2}" size="1" id="phl2SelectList">
+                <apex:selectOptions value="{!phl2Options}" />
+                <apex:actionSupport action="{!setPHL3ToNone}" event="onchange" rerender="phl3SelectList"  />    
+            </apex:selectList>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <apex:outputLabel value="   {!$ObjectType.Material_Item__c.fields.PHL3__c.label}:  " />
+            <apex:selectList value="{!selectedPHL3}" size="1" id="phl3SelectList">
+                <apex:selectOptions value="{!phl3Options}" />
+            </apex:selectList>
+            <br /><br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<apex:commandButton value="{!$Label.Button_Search}" action="{!getMaterialsByPHL1}" rerender="mainPanel, controlBlock" status="getMaterials" style="width:10%;" />       
+            &nbsp;&nbsp;&nbsp;<apex:actionStatus startText="{!$Label.Quick_Add_selected_PHL1}" id="getMaterials" />     
+            <br /><br />
+            <apex:outputPanel id="mainPanel">
+                <apex:pageBlockTable value="{!fakeList}" var="curr">
+                <apex:column style="width:2.5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">&nbsp;</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:7%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:25.5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Material_Item__c.fields.Material_Description__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:2.5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$Label.Pref}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:6%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$Label.Annual_Qty}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.UoM__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:6%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Actual_Price__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Per__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:6%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Floor_Price__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:6%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Target_Price__c.label}</apex:outputPanel></apex:facet></apex:column>
+                    <apex:column style="width:8.5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$Label.Avg_Sell_Price}</apex:outputPanel></apex:facet></apex:column>                                     
+                </apex:pageBlockTable>
+                <div style="height:200px;overflow:auto;">
+                    <apex:pageBlockTable value="{!paginator.slList}" var="currentLine" id="valueList" headerClass="noHeader">
+                        <apex:column style="width:2.5%;">
+                            <apex:facet name="header">
+                                <apex:outputpanel style="width:100%;">
+                                    <apex:actionStatus id="selectstatus" stopText=" " startText="{!$Label.Selecting}"/>
+                                </apex:outputpanel>
+                            </apex:facet>                       
+                            <apex:inputCheckbox value="{!currentLine.isSelected}" style="width:100%;">
+                                <apex:actionSupport event="onclick" action="{!paginator.obtainAUMForSelectedStandard}" rerender="valueList">
+                                    <apex:param name="materialID" value="{!currentLine.miRecord.Id}" />
+                                </apex:actionSupport>
+                            </apex:inputCheckbox>
+                        </apex:column>                  
+                        <apex:column style="width:7%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}</apex:outputPanel></apex:facet>
+                            <apex:outputField value="{!currentLine.miRecord.Material_Code__c}" style="width:100%;"/>
+                        </apex:column>
+                        <apex:column style="width:25.5%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Material_Item__c.fields.Material_Description__c.label}</apex:outputPanel></apex:facet>
+                            <apex:outputField value="{!currentLine.miRecord.Material_Description__c}" style="width:100%;"/>
+                        </apex:column>
+                        <apex:column style="width:2.5%;">
+                            <apex:facet name="header"><apex:outputPanel style="width:100%;">{!$Label.Pref}</apex:outputPanel></apex:facet>
+                            <apex:inputCheckbox value="{!currentLine.miRecord.Preferred__c}" disabled="true" style="width:100%;"/>
+                        </apex:column>
+                        <apex:column id="materialQty" style="width:6%;">
+                            <apex:facet name="header"><apex:outputPanel style="width:100%;">{!$Label.Annual_Qty}</apex:outputPanel></apex:facet>
+                            <apex:inputField value="{!currentLine.sli.Quantity__c}" style="width:100%;"/>
+                        </apex:column>
+                        <apex:column style="width:5%;">
+                            <apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.UoM__c.label}</apex:outputPanel></apex:facet>
+                            <apex:selectList value="{!currentLine.sli.UoM__c}" size="1" disabled="{!NOT(currentLine.isSelected)}" style="width:100%;">
+                                <apex:selectOptions value="{!currentLine.availableUoMs}" />
+                                <apex:actionSupport event="onchange" action="{!paginator.performConversion}" rerender="valueList">
+                                    <apex:param value="{!currentLine.id}" name="ruleID" />
+                                    <apex:param value="{!currentLine.sli.UoM__c}" name="prevUoM" />
+                                </apex:actionSupport>
+                            </apex:selectList>
+                        </apex:column>
+                        <apex:column style="width:6.5%;">
+                            <apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Actual_Price__c.label}</apex:outputPanel></apex:facet>
+                            <apex:inputField value="{!currentLine.sli.Actual_Price__c}" style="width:100%;" />
+                        </apex:column>  
+                        <apex:column id="materialPer" style="width:5%;">
+                            <apex:facet name="header">
+                                <apex:outputPanel style="width:100%;">
+                                    {!$Label.Custom_Per}
+                                </apex:outputPanel>
+                            </apex:facet>
+                            <apex:inputField value="{!currentLine.sli.Per__c}" id="perField" style="width:100%;">
+                                <apex:actionSupport event="onblur" action="{!paginator.changePer}" rerender="valueList">
+                                    <apex:param value="{!currentLine.id}" name="ruleID" />
+                                </apex:actionSupport>
+                            </apex:inputField>
+                        </apex:column>  
+                        <apex:column style="width:6%;">
+                            <apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Floor_Price__c.label}</apex:outputPanel></apex:facet>
+                            <apex:outputField style="width:100%;" value="{!currentLine.sli.Floor_Price__c}" />
+                        </apex:column>
+                        <apex:column style="width:6%;"><apex:facet name="header"><apex:outputPanel style="width:100%;">{!$ObjectType.Quote_Line_Item__c.fields.Target_Price__c.label}</apex:outputPanel></apex:facet>
+                            <apex:outputField style="width:100%;" value="{!currentLine.sli.Target_Price__c}" />
+                        </apex:column>
+                        <apex:column style="width:8%;">
+                            <apex:facet name="header"><apex:outputPanel style="width:100%;">{!$Label.Avg_Sell_Price}</apex:outputPanel></apex:facet>
+                            <apex:outputPanel style="width:100%;">
+                                &nbsp;&nbsp;&nbsp;<!--  <c:AdjustCurrencyComponent CurrencyType="{!pageRecord.CurrencyIsoCode} " ConversionValue="{!currentLine.avgSellPrice}" />-->
+                            </apex:outputPanel>
+                        </apex:column>                                                                      
+                        <apex:facet name="footer">
+                            <apex:outputPanel >
+                                <apex:outputText value="{!$Label.Page} {!paginator.paginator.pageNumberDisplayFriendly} {!$Label.of} {!paginator.paginator.pageCount} {!$Label.in} {!paginator.paginator.recordCount} {!$Label.Results}"/>
+                                <apex:outputPanel >&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputPanel>
+                                <apex:commandLink value="{!$Label.Previous}" action="{!paginator.paginator.previous}"
+                                    rendered="{!IF(paginator.paginator.hasPrevious,'true','false')}" rerender="valueList" />
+                                <apex:outputText value="{!$Label.Previous}" rendered="{!IF(NOT(paginator.paginator.hasPrevious),'true','false')}"/>
+                                <apex:outputPanel >&nbsp;|&nbsp;</apex:outputPanel>
+                                <apex:commandLink value="{!$Label.Next}" action="{!paginator.paginator.next}" onclick="moveWindow();"
+                                    rendered="{!IF(paginator.paginator.hasNext,'true','false')}" rerender="valueList" />
+                                <apex:outputText value="{!$Label.Next}" rendered="{!IF(NOT(paginator.paginator.hasNext),'true','false')}"/>
+                            </apex:outputPanel>
+                        </apex:facet>                       
+                    </apex:pageBlockTable>
+                </div>
+            </apex:outputPanel>
+            
+            
+
+
+
+            <apex:pageBlockSection title="{!$Label.Quick_Add_Formulaic_SLI}" collapsible="false" />
+            <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Source_Sales_Site__c.label}:  " /> 
+            <apex:selectList value="{!siteChoice}" id="salesSiteList" size="1">
+                <apex:selectOptions value="{!customerSites}" />
+                <apex:actionSupport event="onchange" action="{!getMaterialsBySite}" rerender="valueListFormula, errors" status="getMaterials2" />
+            </apex:selectList>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <apex:actionStatus startText="{!$Label.Quick_Add_Obtaining_Formula}" id="getMaterials2" /><br /><br />
+            <apex:outputPanel id="formulaPanel">
+                <div>
+            <!--      <apex:actionRegion >   -->
+                    <apex:pageBlockTable value="{!formulaList}" var="currentLine" id="valueListFormula">
+                        <apex:column >
+                            <apex:facet name="header">
+                                <apex:outputpanel >
+                                    <apex:actionStatus id="selectstatus2" stopText="" startText="{!$Label.Selecting}"/>
+                                </apex:outputpanel>
+                            </apex:facet>                       
+                            <apex:inputCheckbox value="{!currentLine.isSelected}" />
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}">
+                            <apex:outputLabel value="{!currentLine.materialCode}" />
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Material_Item__c.fields.Material_Description__c.label}">
+                            <apex:outputLabel value="{!currentLine.materialDesc}" />
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Material_Item__c.fields.Preferred__c.label}">
+                            <apex:inputCheckbox value="{!currentLine.materialPref}"  disabled="true" />
+                        </apex:column>                                                  
+                        <apex:column style="width:10%;">
+                            <apex:facet name="header">
+
+                            {!$Label.Annual_Qty_per_1}
+                            </apex:facet>
+                            <apex:inputField value="{!currentLine.sli.Quantity__c}" style="width:90%;"/>
+                        </apex:column>
+                        <apex:column style="width:10%;" id="perFields">
+                            <apex:facet name="header">
+                            {!$ObjectType.Quote_Line_Item__c.fields.Per__c.label}
+                            </apex:facet>
+                            <apex:outputField value="{!currentLine.sli.Per__c}" style="width:90%;" />
+                                <!--  <apex:actionSupport event="onblur" action="{!changeFormulaPer}" rerender="valueListFormula">
+                                    <apex:param value="{!currentLine.id}" name="formulaID" />
+                                </apex:actionSupport>-->
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Quote_Line_Item__c.fields.UoM__c.label}">
+                            <apex:outputField value="{!currentLine.sli.UoM__c}" />
+                            <!--<apex:selectList value="{!currentLine.sli.UoM__c}" size="1" disabled="true">
+                                <apex:selectOptions value="{!currentLine.availableUoMs}" />
+                                  <apex:actionSupport event="onselect" action="{!performFormulaConversion}" rerender="valueListFormula">
+                                    <apex:param value="{!currentLine.id}" name="formulaID" />
+                                    <apex:param value="{!currentLine.sli.UoM__c}" name="prevUoM" />
+                                </apex:actionSupport>
+                            </apex:selectList>-->
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Quote_Line_Item__c.fields.Actual_Price__c.label}">
+                            <apex:outputField value="{!currentLine.sli.Actual_Price__c}" />
+                        </apex:column>
+                        <apex:column headerValue="{!$Label.Ext}">
+                            <apex:inputCheckbox value="{!currentLine.notAtPrimarySite}" disabled="true" />
+                        </apex:column>
+                    </apex:pageBlockTable>
+                <!--   </apex:actionRegion>  -->
+                </div>
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+
+    <apex:relatedList list="ProcessSteps"/> 
+    
+       <apex:pageBlock id="pAndLChart" title="{!$Label.Advanced_Add_PandL_Chart}" mode="detail">
+        <c:PandLChart quote="{!pageRecord}" taic="{!taic}" CMP="{!contribMargin}" />
+    </apex:pageBlock>
+
+    <apex:form id="quoteContactForm">
+        <apex:pageBlock id="quoteContactBlock" title="{!$Label.QGC_QuoteContacts}" mode="edit">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.QGP_NewQC}" action="{!goToQCCreate}"  />
+                <apex:commandButton value="{!$Label.QGP_SaveSelected}" action="{!saveEmailSelection}" status="qcSaveStatus" rerender="quoteContactBlock" />
+                <apex:actionStatus startText="{!$Label.QGC_SaveRecipients}" id="qcSaveStatus" />
+                <apex:actionStatus startText="{!$Label.QGC_MarkPrimary}" id="qcMarkPrimary" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!quoteContactList}" var="item" rendered="{!renderQC}">
+                <apex:column >
+                    <apex:facet name="header">
+                        {!$ObjectType.Quote_Contact__c.fields.Primary_Recipient__c.label}
+                    </apex:facet>
+                    <apex:inputField value="{!item.Primary_Recipient__c}">
+                        <apex:actionSupport event="onclick" action="{!markOneAsPrimary}" rerender="quoteContactBlock" status="qcMarkPrimary">
+                            <apex:param name="primaryContact" value="{!item.Id}" />
+                        </apex:actionSupport>
+                    </apex:inputField>
+                </apex:column>          
+                <apex:column >
+                    <apex:facet name="header">
+                        {!$ObjectType.Quote_Contact__c.fields.Selected__c.label}
+                    </apex:facet>
+                    <apex:inputField value="{!item.Selected__c}" />
+                </apex:column>              
+                <apex:column value="{!item.Contact__r.Name}" />
+                <apex:column value="{!item.Contact__r.AccountId}" />
+                <apex:column value="{!item.Contact__r.Email}" />                
+            </apex:pageBlockTable>
+            <apex:outputLabel value="{!$Label.RL_No_Records}" rendered="{!NOT(renderQC)}" styleClass="noRowsHeader" />
+        </apex:pageBlock>
+    </apex:form>
+    <apex:relatedList list="OpenActivities"/>
+    <apex:relatedList list="NotesAndAttachments"/>  
+    <apex:relatedList list="Pricing_Conditions__r" id="prId"/>  
+   
+   
+<script type="text/javascript" language="javascript">
+    function moveWindow (){window.location.hash="DETAILS";}
+    window.onload = function() {window.scrollTo(0,0);}
+</script>
+   
+</apex:page>

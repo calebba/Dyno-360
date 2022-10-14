@@ -1,0 +1,182 @@
+        @page {
+
+            size:landscape;
+
+            }
+         table {
+				border: solid gray 2px 0px 2px 2px;
+				border-collapse: collapse;
+				width: 100%;
+			}
+			td, th {
+				padding: 2px;
+				text-align: center;
+			}
+			h1,h2 {
+				text-align: center;
+			}
+			div.container {
+				float: left;
+				margin: 10px;
+				border: 4px solid gray;
+				font-weight: bold;
+				font-size: 105%;
+			}
+			div.title {
+				text-align: center;
+				border-bottom: 4px solid gray;
+			}
+			div#header {
+				width: 98%;
+			}
+			div#first_row {
+				/*border: solid black 4px;*/
+			}
+
+			div#second_row {
+				border-width: 4px 0px 0px 0px;
+				border-style: solid;
+				border-color: gray;
+			}
+			div#second_row table tr th,td {
+				border-width: 0px 4px;
+				border-style: solid;
+				border-color: gray;
+			}
+			div#second_row table tr th:first-child, td:first-child {
+				border-width: 0px;
+			}
+			div#second_row table tr th:last-child, td:last-child {
+				border-width: 0px;
+			}
+			div#spacer {
+				width:19%;
+				float: left;
+			}
+			div#information {
+				width: 60%;
+				float: left;
+			}
+			
+			div#logo {
+				float: left;
+				width: 19%;
+			}
+			
+			.clear {
+				clear: both;
+			}
+			
+			div#information p {
+				text-align: center;
+			}
+
+			div#products {
+				width: 98%;
+			}
+			
+			div#revAndGrossMargin {
+				width: 47%;
+				float: left;
+			}
+			
+			div#directCosts {
+				width: 47%;
+				float: right;
+			}
+			
+			div#indirectCosts {
+				width:98%;
+				float: left;
+			}
+			
+			div#footer {
+				width: 98%;
+				float: left;
+			}
+			
+			div#currency {
+				text-align: center;
+				width: 6%;
+			}
+			
+			div#comments {
+				text-align: center;
+				width: 60%;
+			}
+			
+			div#ebita {
+				text-align: center;
+				width: 20%;
+				float: right;
+			}
+			
+			div#ebita ul {
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+			}
+			
+			table.ledger {
+				margin-left:25px;
+				/*margin-right: 15px;*/
+				padding: 5px;
+				width: 90%;
+			}
+			
+			table.product_table tr th {
+				font-size: 75%;
+				border-bottom: 2px solid gray;
+			}
+			
+			table.product_table tr td {
+				width: 6.75%;
+				font-size: 75%;
+				border-bottom: 1px solid gray;
+				padding: 5px;
+			}
+			
+			table.product_table tr td:first-child {
+				width: 10%;
+				font-weight: bold;
+				border-bottom: 2px solid gray;
+			}
+			
+			table.product_table tr:last-child td {
+				border-bottom: 0;
+			}
+			
+			table.ledger {
+				margin: 15px;
+			}
+			
+			table.ledger tr td {
+				padding: 2px;
+			}
+			
+			table.ledger tr th {
+				border-bottom: 2px solid gray;
+			}
+			
+			table.ledger tr.divided {
+				border-bottom: 2px solid gray;
+			}
+			
+			th.description {
+				text-align: left;
+				font-weight: normal;
+			}
+			
+			td.description {
+				font-size: 90%;
+				text-align: left;
+				font-weight: bold;
+			}
+			
+			th.number, td.number {
+				text-align: right;
+			}
+			
+			td.totalled {
+				border-bottom: 2px solid gray;
+			}

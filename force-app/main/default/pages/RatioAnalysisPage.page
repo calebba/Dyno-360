@@ -1,0 +1,321 @@
+<apex:page controller="RatioAnalysisController" id="thePage">
+	<apex:stylesheet value="{!URLFOR($Resource.Assets, 'assets/css/PandLPDF.css')}" />
+	<style type="text/css">
+		td.ratio {
+			width="16.67%";
+			border:solid;
+			text-align="center";
+		}
+	</style>
+	<!-- START HEADER -->
+	<br />
+	<apex:outputPanel id="theHeader">
+	<div id="header">
+		<table class="typeOne">
+			<tr>
+				<td align="center" colspan="6" style="border:solid;">
+					<div class="typeTwo"><apex:outputLabel id="acctHeader" value="{!IF(OR(ISNULL(currAccount.Name), ISBLANK(currAccount.Name)), $Label.RA_Init , currAccount.Name)}" /></div>
+					<div class="typeThree">{!$Label.RA_Title}</div>
+					<div class="typeFour">{!$Label.PandLPDF_Date}: {!IF(ISNULL(startDate), $Label.TBD, fancyStartDate & ' - ' & fancyEndDate)}</div>
+				</td>
+				<td align="center" colspan="2" style="border:solid;">
+					<apex:image url="{!URLFOR($Resource.Assets, 'assets/img/Dynologo.jpg')}" />
+				</td>
+			</tr>
+			<tr>
+				<td align="center" width="12%" style="border:solid;">
+					<div>{!$Label.Company}</div>
+					<div class="typeNine"><apex:outputLabel id="acctCountryHeader" value="{!IF(OR(ISNULL(currSite.Company_Site__r.Name), ISBLANK(currSite.Company_Site__r.Name)), $Label.TBD, currSite.Company_Site__r.Name)}" /></div>
+				</td>
+				<td align="center" width="12%" style="border:solid;">
+					<div>{!$Label.PandLGenerationSalesSite}</div>
+					<div class="typeNine"><apex:outputLabel id="salesOrgHeader" value="{!IF(OR(ISNULL(currSite.Name), ISBLANK(currSite.Name)), $Label.TBD, currSite.Name)}" /></div>
+				</td>
+				<td align="center" width="15%" style="border:solid;">
+					<div>{!$Label.PandLPDF_Currency}</div>
+					<div class="typeNine"><apex:outputLabel id="acctSAPHeader" value="{!IF(OR(ISNULL(currAccount.CurrencyIsoCode), ISBLANK(currAccount.CurrencyIsoCode)), $Label.TBD, currAccount.CurrencyIsoCode)}" /></div>
+				</td>
+				<td align="center" width="14%" style="border:solid;">
+					<div>{!$Label.RA_SoldToNo}</div>
+					<div class="typeNine"><apex:outputLabel id="salesOrgSAPHeader" value="{!IF(OR(ISNULL(currAccount.Parent.SAP_Account_Number__c), ISBLANK(currAccount.Parent.SAP_Account_Number__c)), $Label.TBD, currAccount.Parent.SAP_Account_Number__c )}" /></div>
+				</td>
+				
+				<td align="center" width="25%" style="border:solid;">
+					<div>{!$Label.RA_ShipToName}</div>
+					<div class="typeNine"><apex:outputLabel id="acctNameHeader" value="{!IF(OR(ISNULL(currAccount.Name), ISBLANK(currAccount.Name)), $Label.TBD, currAccount.Name + ', ' + currAccount.SAP_Account_Number__c)}" /></div>
+				</td>
+				<td align="center" width="7.25%" style="border:solid;">
+					<div>{!$Label.RA_GM}</div>
+					<div class="typeNine">{!IF(ISNULL(gmp), $Label.TBD, TEXT(ROUND(gm,2))&'%')}</div>
+				</td>
+				<td align="center" width="7.25%" style="border:solid;">
+					<div>{!$Label.RA_CM}</div>
+					<div class="typeNine">{!IF(ISNULL(cmp), $Label.TBD, TEXT(ROUND(cm,2))&'%')}</div>
+				</td>
+				<td align="center" width="7.5%" style="border:solid;">
+					<div>{!$Label.RA_EBITA}</div>
+					<div class="typeNine">{!IF(ISNULL(ebitap), $Label.TBD, TEXT(ROUND(ebita,2))&'%')}</div>
+				</td>																				
+			</tr>	
+		</table>
+	</div>
+	</apex:outputPanel>
+	<!-- END HEADER -->	
+	
+	<!-- BEGIN SELECTION -->
+	<br />
+	<apex:form id="optionForm">
+		<apex:pageBlock >
+			<apex:pageMessages />
+			<apex:pageBlockSection columns="5">
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Quote__c.fields.Price_Valid_From__c.label}" />
+					<apex:inputField value="{!dummyQuote.Price_Valid_From__c}" required="false" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Quote__c.fields.Price_Valid_To__c.label}" />
+					<apex:inputField value="{!dummyQuote.Price_Valid_To__c}" required="false" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Opportunity.fields.AccountId.label}" />
+					<apex:inputField value="{!dummyOpp.AccountId}" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Quote__c.fields.Sales_Organization_Primary__c.label}" />
+					<apex:inputField value="{!dummyQuote.Sales_Organization_Primary__c}" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:commandButton value="{!$Label.RA_Analyze}" action="{!performAnalyzation}" status="doAnalyze" rerender="optionForm, theHeader, theContent" />
+					<apex:actionStatus id="doAnalyze" startText="{!$Label.RA_Performing}..." />
+				</apex:pageBlockSectionItem>							
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+	<br />
+	<!-- END SELECTION -->
+	
+	<!-- BEGIN CONTENT -->
+	<apex:outputPanel id="theContent">
+	<div id="content">
+		<table class="typeOne" id="theTable">
+			<tr>
+				<td class="ratio" align="center">{!$Label.RA_REVENUE}</td>
+				<td width="66.68%" colspan="4" style="border:solid;" align="center">{!IF(OR(ISNULL(currSite.Name), ISBLANK(currSite.Name)), $Label.TBD, currSite.Name)} {!$Label.RA_VS} {!IF(OR(ISNULL(currAccount.Name), ISBLANK(currAccount.Name)), $Label.TBD, currAccount.Name)}</td>
+				<td class="ratio" align="center">{!$Label.RA_EBITA}</td>											
+			</tr>
+			<tr>
+				<td class="ratio" align="center">{!IF(ISNULL(fancyRevenue), $Label.TBD, $Label.CurrencyUS & fancyRevenue)}</td>
+				<td class="ratio" align="center">{!$Label.RA_PI}</td>
+				<td class="ratio" align="center">{!$Label.RA_PH}</td>
+				<td class="ratio" align="center">{!$Label.RA_PM}</td>
+				<td class="ratio" align="center">{!$Label.RA_PU}</td>
+				<td class="ratio" align="center">{!IF(ISNULL(fancyEBIT), $Label.TBD, $Label.CurrencyUS & fancyEBIT)}</td>											
+			</tr>
+			<tr>
+				<td class="ratio" align="center">{!$Label.RA_ShipTo}</td>
+				<td class="ratio" align="center">{!fancyInvoices} {!$Label.RA_Invoices}</td>
+				<td class="ratio" align="center">{!fancyHours} {!$Label.RA_Hours}</td>
+				<td class="ratio" align="center">{!fancyMileage} {!$Label.RA_Miles}</td>
+				<td class="ratio" align="center">{!fancyUnits} {!$Label.RA_Units}</td>
+				<td class="ratio" align="center">{!$Label.RA_ShipTo}</td>										
+			</tr>
+			<tr>
+				<td class="ratio" align="center">{!$Label.PandLGenerationSalesSite}</td>
+				<td class="ratio" align="center">{!fancyInvoicesSo} {!$Label.RA_Invoices}</td>
+				<td class="ratio" align="center">{!fancyHoursSo} {!$Label.RA_Hours}</td>
+				<td class="ratio" align="center">{!fancyMileageSo} {!$Label.RA_Miles}</td>
+				<td class="ratio" align="center">{!fancyUnitsSo} {!$Label.RA_Units}</td>
+				<td class="ratio" align="center">{!$Label.PandLGenerationSalesSite}</td>										
+			</tr>									
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_REVENUE}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!netRevenue_cmInvoices}" bCurr="{!netRevenue_soInvoices}" tvn="{!netRevenue}" tvd="{!cmInvoices}" bvn="{!netRevenue}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!netRevenue_cmHours}" bCurr="{!netRevenue_soHours}" tvn="{!netRevenue}" tvd="{!cmHours}" bvn="{!netRevenue}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!netRevenue_cmMileage}" bCurr="{!netRevenue_soMileage}"  tvn="{!netRevenue}" tvd="{!cmMileage}" bvn="{!netRevenue}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!netRevenue_cmUnits}" bCurr="{!netRevenue_soUnits}" tvn="{!netRevenue}" tvd="{!cmUnits}" bvn="{!netRevenue}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_REVENUE}</td>											
+			</tr>
+			<tr></tr>
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_GrossM}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gm_cmInvoices}" bCurr="{!gm_soInvoices}" tvn="{!gm}" tvd="{!cmInvoices}" bvn="{!gm}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gm_cmHours}" bCurr="{!gm_soHours}" tvn="{!gm}" tvd="{!cmHours}" bvn="{!gm}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gm_cmMileage}" bCurr="{!gm_soMileage}" tvn="{!gm}" tvd="{!cmMileage}" bvn="{!gm}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gm_cmUnits}" bCurr="{!gm_soUnits}" tvn="{!gm}" tvd="{!cmUnits}" bvn="{!gm}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_GrossM}</td>											
+			</tr>
+			<tr></tr>
+		  	<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_GrossMST}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gmst_cmInvoices}" bCurr="{!gmst_soInvoices}" tvn="{!gmst}" tvd="{!cmInvoices}" bvn="{!gmst}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gmst_cmHours}" bCurr="{!gmst_soHours}" tvn="{!gmst}" tvd="{!cmHours}" bvn="{!gmst}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gmst_cmMileage}" bCurr="{!gmst_soMileage}" tvn="{!gmst}" tvd="{!cmMileage}" bvn="{!gmst}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!gmst_cmUnits}" bCurr="{!gmst_soUnits}" tvn="{!gmst}" tvd="{!cmUnits}" bvn="{!gmst}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_GrossMST}</td>											
+			</tr>
+			<tr></tr> 
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_ContM}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!cm_cmInvoices}" bCurr="{!cm_soInvoices}" tvn="{!cm}" tvd="{!cmInvoices}" bvn="{!cm}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32"  Prefix="{!$Label.CurrencyUS}" />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!cm_cmHours}" bCurr="{!cm_soHours}" tvn="{!cm}" tvd="{!cmHours}" bvn="{!cm}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!cm_cmMileage}" bCurr="{!cm_soMileage}" tvn="{!cm}" tvd="{!cmMileage}" bvn="{!cm}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!cm_cmUnits}" bCurr="{!cm_soUnits}" tvn="{!cm}" tvd="{!cmUnits}" bvn="{!cm}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_ContM}</td>											
+			</tr>
+			<tr></tr>
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_DHrs}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!delHrs_cmInvoices}" bCurr="{!delHrs_soInvoices}" tvn="{!delHrs}" tvd="{!cmInvoices}" bvn="{!delHrs}" bvd="{!soInvoices}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1"tCurr="{!delHrs_cmHours}" bCurr="{!delHrs_soHours}" tvn="{!delHrs}" tvd="{!cmHours}" bvn="{!delHrs}" bvd="{!soHours}" HighlightRule="TG" HighlightColor="#32CD32"  Prefix="" />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!delHrs_cmMileage}" bCurr="{!delHrs_soMileage}" tvn="{!delHrs}" tvd="{!cmMileage}" bvn="{!delHrs}" bvd="{!soMileage}" HighlightRule="TG" HighlightColor="#32CD32"  Prefix="" />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1"  tCurr="{!delHrs_cmUnits}" bCurr="{!delHrs_soUnits}" tvn="{!delHrs}" tvd="{!cmUnits}" bvn="{!delHrs}" bvd="{!soUnits}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_DHrs}</td>											
+			</tr>
+			<tr></tr> 
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_SSHrs}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!ssHrs_cmInvoices}" bCurr="{!ssHrs_soInvoices}" tvn="{!ssHrs}" tvd="{!cmInvoices}" bvn="{!ssHrs}" bvd="{!soInvoices}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!ssHrs_cmHours}" bCurr="{!ssHrs_soHours}" tvn="{!ssHrs}" tvd="{!cmHours}" bvn="{!ssHrs}" bvd="{!soHours}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!ssHrs_cmMileage}" bCurr="{!ssHrs_soMileage}" tvn="{!ssHrs}" tvd="{!cmMileage}" bvn="{!ssHrs}" bvd="{!soMileage}" HighlightRule="TG" HighlightColor="#32CD32"  Prefix="" />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!ssHrs_cmUnits}" bCurr="{!ssHrs_soUnits}" tvn="{!ssHrs}" tvd="{!cmUnits}" bvn="{!ssHrs}" bvd="{!soUnits}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_SSHrs}</td>											
+			</tr>
+			<tr></tr>  
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_THrs}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmHours_cmInvoices}" bCurr="{!cmHours_soInvoices}" tvn="{!cmHours}" tvd="{!cmInvoices}" bvn="{!cmHours}" bvd="{!soInvoices}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmHours_cmHours}" bCurr="{!cmHours_soHours}" tvn="{!cmHours}" tvd="{!cmHours}" bvn="{!cmHours}" bvd="{!soHours}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmHours_cmMileage}" bCurr="{!cmHours_soMileage}" tvn="{!cmHours}" tvd="{!cmMileage}" bvn="{!cmHours}" bvd="{!soMileage}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmHours_cmUnits}" bCurr="{!cmHours_soUnits}" tvn="{!cmHours}" tvd="{!cmUnits}" bvn="{!cmHours}" bvd="{!soUnits}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_THrs}</td>											
+			</tr>
+			<tr></tr>
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_Mileage}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmMileage_cmInvoices}" bCurr="{!cmMileage_soInvoices}" tvn="{!cmMileage}" tvd="{!cmInvoices}" bvn="{!cmMileage}" bvd="{!soInvoices}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1"  tCurr="{!cmMileage_cmInvoices}" bCurr="{!cmMileage_soInvoices}" tvn="{!cmMileage}" tvd="{!cmHours}" bvn="{!cmMileage}" bvd="{!soHours}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmMileage_cmMileage}" bCurr="{!cmMileage_soMileage}" tvn="{!cmMileage}" tvd="{!cmMileage}" bvn="{!cmMileage}" bvd="{!soMileage}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmMileage_cmUnits}" bCurr="{!cmMileage_soUnits}" tvn="{!cmMileage}" tvd="{!cmUnits}" bvn="{!cmMileage}" bvd="{!soUnits}" HighlightRule="TG" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_Mileage}</td>											
+			</tr> 
+			<tr></tr> 	 
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_Units}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmUnits_cmInvoices}" bCurr="{!cmUnits_soInvoices}" tvn="{!cmUnits}" tvd="{!cmInvoices}" bvn="{!cmUnits}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1"  tCurr="{!cmUnits_cmHours}" bCurr="{!cmUnits_soHours}"  tvn="{!cmUnits}" tvd="{!cmHours}" bvn="{!cmUnits}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmUnits_cmMileage}" bCurr="{!cmUnits_soMileage}" tvn="{!cmUnits}" tvd="{!cmMileage}" bvn="{!cmUnits}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmUnits_cmUnits}" bCurr="{!cmUnits_soUnits}"  tvn="{!cmUnits}" tvd="{!cmUnits}" bvn="{!cmUnits}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_Units}</td>											
+			</tr> 
+			<tr></tr>
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_Invoices}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmInvoices_cmInvoices}" bCurr="{!cmInvoices_soInvoices}" tvn="{!cmInvoices}" tvd="{!cmInvoices}" bvn="{!cmInvoices}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32"  Prefix="" />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmInvoices_cmHours}" bCurr="{!cmInvoices_soHours}" tvn="{!cmInvoices}" tvd="{!cmHours}" bvn="{!cmInvoices}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmInvoices_cmMileage}" bCurr="{!cmInvoices_soMileage}" tvn="{!cmInvoices}" tvd="{!cmMileage}" bvn="{!cmInvoices}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter padded="1" tCurr="{!cmInvoices_cmUnits}" bCurr="{!cmInvoices_soUnits}" tvn="{!cmInvoices}" tvd="{!cmUnits}" bvn="{!cmInvoices}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix=""  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_Invoices}</td>											
+			</tr> 
+			<tr></tr>
+			<tr>			
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_EBITA}</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!ebita_cmInvoices}" bCurr="{!ebita_soInvoices}" tvn="{!ebita}" tvd="{!cmInvoices}" bvn="{!ebita}" bvd="{!soInvoices}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!ebita_cmHours}" bCurr="{!ebita_soHours}" tvn="{!ebita}" tvd="{!cmHours}" bvn="{!ebita}" bvd="{!soHours}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!ebita_cmMileage}" bCurr="{!ebita_soMileage}" tvn="{!ebita}" tvd="{!cmMileage}" bvn="{!ebita}" bvd="{!soMileage}" HighlightRule="TL" HighlightColor="#32CD32"  Prefix="{!$Label.CurrencyUS}" />
+				</td> 
+				<td style="width=16.67%;border:solid;padding:0px;margin:0px;" align="left" valign="top" cellpadding="0" cellspacing="0" rowspan="2">
+					<c:RatioAnalysisCellHighlighter tCurr="{!ebita_cmUnits}" bCurr="{!ebita_soUnits}" tvn="{!ebita}" tvd="{!cmUnits}" bvn="{!ebita}" bvd="{!soUnits}" HighlightRule="TL" HighlightColor="#32CD32" Prefix="{!$Label.CurrencyUS}"  />
+				</td>
+				<td class="ratio" rowspan="2" align="center" valign="center">{!$Label.RA_EBITA}</td>											
+			</tr>
+			<tr></tr>	 			 						  								 			  			 				  			  																																																													
+		</table>
+	</div>
+	</apex:outputPanel>
+	<!-- END CONENT -->
+</apex:page>

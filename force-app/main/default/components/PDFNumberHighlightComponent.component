@@ -1,0 +1,5 @@
+<apex:component >
+	<apex:attribute required="true" name="Value" description="Used to properly highlight currency" type="String"/>
+	<apex:outputPanel rendered="{!IF(LEN(VALUE) > 0 && NOT(BEGINS(VALUE, '-')) && NOT(BEGINS(VALUE, '$-')), true, false)}">{!Value}</apex:outputPanel>
+	<apex:outputPanel rendered="{!IF(LEN(VALUE) > 0 && OR(BEGINS(VALUE, '-'),BEGINS(VALUE, '$-')), true, false)}" style="color:red;">({!Value})</apex:outputPanel>
+</apex:component>

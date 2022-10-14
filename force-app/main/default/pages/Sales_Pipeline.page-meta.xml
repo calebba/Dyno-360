@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>34.0</apiVersion>
+    <availableInTouch>true</availableInTouch>
+    <confirmationTokenRequired>false</confirmationTokenRequired>
+    <description>AG_Pipeline_Total__c;AG_Dyno_Comment__c
+New production version of the &quot;Customer Sales Pipeline&quot; used on the account page layout.</description>
+    <label>Sales Pipeline</label>
+</ApexPage>

@@ -1,0 +1,151 @@
+		table.typeOne {
+			width:100%;
+			border-width:2px;
+			border-color:black;
+			border-collapse:collapse;
+			padding-bottom:3px;
+		}
+		
+		table.typeTwo {
+			border-collapse:collapse;
+			width:100%;
+		}
+		
+		td.typeOne {
+			border-style:solid none solid solid;
+		}
+		
+		td.typeTwo {
+			vertical-align:top;
+			padding-top:5px;
+			border-style:solid solid solid none;
+		}
+		
+		td.typeThree {
+			border-style:solid;
+			vertical-align:top;
+			padding-top:5px;
+			font-size:85%;
+		}
+		
+		td.typeFour {
+			border-width:2px;
+			border-style:solid;
+			padding:2px;
+			font-size:95%;
+		}
+		
+		td.typeFive {
+			padding:5px 2px 2px 2px;
+			border-style:none none none solid;
+		}
+		
+		td.typeSix {
+			padding:5px 2px 2px 2px;
+			border-style:none solid none none;
+		}
+		
+		td.typeSeven {
+			padding:5px 2px 2px 2px;
+		}
+		
+		td.typeEight {
+			border-style:none none none solid;
+		}
+		
+		td.typeNine {
+			border-style:none solid none none;
+		}
+		
+		td.typeTen {
+			border-style:none solid none none;
+			color:red;		
+		}
+		
+		td.typeEleven {
+			border-style:none none none solid;
+			font-weight:bold;
+			padding-left:15px;		
+		}
+		
+		td.typeTwelve {
+			padding:5px 2px 2px 2px;
+			border-style:none none none solid;
+		}
+		
+		td.typeThirteen {
+			border-style:none none solid solid		
+		}
+		
+		td.typeFourteen {
+			border-style:none solid solid none;		
+		}
+		
+		td.typeFifteen {
+			border-style:none none solid none;
+		}
+		
+		td.typeSixteen {
+			padding:5px 2px 2px 2px;
+			border-style:none solid none none;
+		}
+		
+		td.solidBorder {
+			border-style:solid;
+		}
+		
+		td.noBorder {
+			border-style:none;
+		}
+		
+		td.topPadded {
+			padding: 5px 2px 2px 2px;
+		}
+		
+		td.paddedBorder {
+			border-style:solid;
+			padding:2px;
+		}
+		
+		td.bottomBorder {
+			border-style:none none solid none;
+		}
+		
+		div.typeOne {
+			font-size:85%;
+			padding-top:5px;
+		}
+		
+		div.typeTwo {
+			font-size:115%;
+			font-weight:bold;
+			padding-top:5px;
+		}
+		
+		div.typeThree {
+			font-size:95%;
+			font-weight:bold;
+			padding-top:5px;
+		}
+		
+		div.typeFour {
+			font-size:95%;
+			padding-top:5px;
+		}
+		
+		div.typeFive {
+			display:inline;
+		}
+		
+		div.typeNine {
+			padding-top:5px;
+			font-weight:bold;
+		}
+		
+		hr.setWidth {
+			width:80%;
+		}
+		
+		span.redFont {
+			color:red;
+		}

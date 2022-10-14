@@ -1,0 +1,390 @@
+<apex:page standardController="Quote__c" extensions="VolumetricParentExtension">
+    <apex:form >
+        <apex:pageMessages />
+        <apex:sectionHeader title="{!$Label.Scenario_Edit_Title}" subtitle="{!Quote__c.Name}" />
+        <apex:pageBlock title="{!$Label.Scenario_Edit_Title}" mode="edit">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.Button_Save}" action="{!save}" />
+                <apex:commandButton value="{!$Label.Button_Cancel}" action="{!cancel}" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Header}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Scenario_Type__c.label}" />
+                    <apex:outputText value="{!Quote__c.Scenario_Type__c}"/>
+                </apex:pageBlockSectionItem>            
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Name.label}" />
+                    <apex:outputText value="{!Quote__c.Name}"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Approval_Status__c.label}" />
+                    <apex:outputField value="{!Quote__c.Approval_Status__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Opportunity__c.label}" />
+                    <apex:outputField value="{!Quote__c.Opportunity__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Customer__c.label}" />
+                    <apex:outputField value="{!Quote__c.Customer__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Potential_Cash_Discount__c.label}" />
+                    <apex:inputField value="{!Quote__c.Potential_Cash_Discount__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Sales_Organization_Primary__c.label}" />
+                    <apex:outputField value="{!Quote__c.Sales_Organization_Primary__c}" />
+                </apex:pageBlockSectionItem>    
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Fuel_Surcharge_FCS__c.label}" />
+                    <apex:inputField value="{!Quote__c.Fuel_Surcharge_FCS__c}" />               
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.CurrencyIsoCode.label}" />
+                    <apex:inputField value="{!Quote__c.CurrencyIsoCode}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.RCS__c.label}" />
+                    <apex:inputField value="{!Quote__c.RCS__c}" />
+                </apex:pageBlockSectionItem>                                                                                                                                                                        
+            </apex:pageBlockSection>
+			<apex:actionRegion >
+            	<apex:pageBlockSection columns="1" title="Quote Output Header Information" id="usersection">
+  <!--              
+                	<apex:pageBlockSectionItem >
+	                    <apex:outputLabel value="Quote Contact Info" />
+		                <apex:inputField value="{!Quote__c.Scenario_Output_Header_Name__c}"  >
+	                    	<apex:actionSupport event="onchange" action="{!updatequoteheaderfield}" rerender="useroutputpanel" status="outputheader_status"/>
+	                        <apex:actionStatus startText="updating output header info field..." id="outputheader_status"/> 
+	                    </apex:inputField>
+	                </apex:pageBlockSectionItem>
+	-->	                
+	                <apex:pageBlockSectionItem >
+	                    <apex:outputLabel value="Quote Contact Info" />
+		                <apex:inputField value="{!Quote__c.Scenario_Output_Header_Contact__c}"  >
+	                    	<apex:actionSupport event="onchange" action="{!updatequoteheaderfieldcontact}" rerender="useroutputpanel" status="outputheader_status"/>
+	                        <apex:actionStatus startText="updating output header info field..." id="outputheader_status"/> 
+	                    </apex:inputField>
+	                </apex:pageBlockSectionItem>
+	                
+	                <apex:pageBlockSectionItem id="outputheader1">
+        				<apex:outputLabel value="Quote Output Contact View" />
+        				<apex:outputPanel id="useroutputpanel">
+        				<apex:inputTextarea id="newhdr" rows="6" cols="30" value="{!Quote__c.Scenario_Output_Header_Info__c}"/><p/>
+        				</apex:outputPanel>
+        			</apex:pageBlockSectionItem>
+<!-- 	                
+	                <apex:pageBlockSectionItem id="outputheader">
+	                	<apex:outputLabel value="Quote Output Contact View" />
+		                <apex:outputPanel id="useroutputpanel">
+		                    <apex:inputField value="{!Quote__c.Scenario_Output_Header_Info__c}" style="width:25%;"/>
+		                </apex:outputPanel>
+	                </apex:pageBlockSectionItem>
+-->	            
+            	</apex:pageBlockSection>
+            </apex:actionRegion>
+
+            <apex:pageBlockSection columns="1">
+                <apex:inputField value="{!Quote__c.Scenario_Notes__c}" id="theNotes"/>  
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Address_Header}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Alternate_Address_Detail__c.label}" />
+                    <apex:inputField value="{!Quote__c.Alternate_Address_Detail__c}" style="width:200%;"/>
+                </apex:pageBlockSectionItem>            
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Acceptance}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Quote_Accepted_By_Customer__c.label}" />
+                    <apex:inputField value="{!Quote__c.Quote_Accepted_By_Customer__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Quote_Acceptance_Period__c.label}" />
+                    <apex:inputField value="{!Quote__c.Quote_Acceptance_Period__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Reason_Comments__c.label}" />
+                    <apex:inputField value="{!Quote__c.Reason_Comments__c}" style="width:200%;" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Caps_On_Escalation__c.label}" />
+                    <apex:inputField value="{!Quote__c.Caps_On_Escalation__c}" required="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Cap_Details__c.label}" />
+                    <apex:inputField value="{!Quote__c.Cap_Details__c}" style="width:200%;"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Take_or_Pay_Contract__c.label}" />
+                    <apex:inputField value="{!Quote__c.Take_or_Pay_Contract__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Target_Win__c.label}" />
+                    <apex:inputField value="{!Quote__c.Target_Win__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Promotional__c.label}" />
+                    <apex:inputField value="{!Quote__c.Promotional__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Trial__c.label}" />
+                    <apex:inputField value="{!Quote__c.Trial__c}" />
+                </apex:pageBlockSectionItem>                                                                                                                                                                        
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Customer_Header}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.On__c.label}" />
+                    <apex:inputField value="{!Quote__c.On__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.AN_Formula_Pricing__c.label}" />
+                    <apex:inputField value="{!Quote__c.AN_Formula_Pricing__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.On_Contract__c.label}" />
+                    <apex:inputField value="{!Quote__c.On_Contract__c}" />
+                </apex:pageBlockSectionItem>    
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Drilling_Provided_By__c.label}" />
+                    <apex:inputField value="{!Quote__c.Drilling_Provided_By__c}" />
+                </apex:pageBlockSectionItem>                                                                
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_CSS_Header}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Customer_Group__c.label}" />
+                    <apex:inputField value="{!Quote__c.Customer_Group__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Payment_Terms__c.label}" />
+                    <apex:inputField value="{!Quote__c.Payment_Terms__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Inco_Terms__c.label}" />
+                    <apex:inputField value="{!Quote__c.Inco_Terms__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Delivery_Sales_Site__c.label}" />
+                    <apex:inputField value="{!Quote__c.Delivery_Sales_Site__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Price_Adjustment__c.label}" />
+                    <apex:inputField value="{!Quote__c.Price_Adjustment__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Pricelist__c.label}" />
+                    <apex:inputField value="{!Quote__c.Pricelist__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Service_Type__c.label}" />
+                    <apex:inputField value="{!Quote__c.Service_Type__c}" />
+                </apex:pageBlockSectionItem>                                                                                        
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Description_Header}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Quote_Description__c.label}" />
+                    <apex:inputField value="{!Quote__c.Quote_Description__c}" style="width:200%;" required="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Quote_Valid_From__c.label}" />
+                    <apex:inputField value="{!Quote__c.Quote_Valid_From__c}" required="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Quote_Valid_To__c.label}" />
+                    <apex:inputField value="{!Quote__c.Quote_Valid_To__c}" required="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Price_Valid_From__c.label}" />
+                    <apex:inputField value="{!Quote__c.Price_Valid_From__c}" required="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Price_Valid_To__c.label}" />
+                    <apex:inputField value="{!Quote__c.Price_Valid_To__c}" required="true" />
+                </apex:pageBlockSectionItem>  
+                <!-- RPN added below July 26 2011 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Print_text_on_AN_and_AN_Based_30_day_p__c.label}" />
+                    <apex:inputField value="{!Quote__c.Print_text_on_AN_and_AN_Based_30_day_p__c}" />
+                </apex:pageBlockSectionItem>  
+                 <!-- RPN added above July 26 2011 -->                                                         
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Operations}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Risk_Assesment__c.label}" />
+                    <apex:inputField value="{!Quote__c.Risk_Assesment__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Have_You_Spoken_to_Operations__c.label}" />
+                    <apex:inputField value="{!Quote__c.Have_You_Spoken_to_Operations__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Is_Additional_Capital_Required__c.label}" />
+                    <apex:inputField value="{!Quote__c.Is_Additional_Capital_Required__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Are_Additional_People_Required__c.label}" />
+                    <apex:inputField value="{!Quote__c.Are_Additional_People_Required__c}" />
+                </apex:pageBlockSectionItem>                                                                
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Workflow}" columns="2">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Approval_Notes__c.label}" />
+                    <apex:inputField value="{!Quote__c.Approval_Notes__c}" style="width:200%;" />
+                </apex:pageBlockSectionItem>            
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Below_Floor_Reason__c.label}" />
+                    <apex:inputField value="{!Quote__c.Below_Floor_Reason__c}"/>
+                </apex:pageBlockSectionItem>        
+                <apex:pageBlockSectionItem />   
+            </apex:pageBlockSection>                        
+            <apex:pageBlockSection title="{!$Label.Scenario_Edit_Cost_Allo}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Per_Event__c.label}" />
+                    <apex:inputField value="{!Quote__c.Per_Event__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Delivery_Hours__c.label}" />
+                    <apex:inputField value="{!Quote__c.Delivery_Hours__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Annual_Number_of_Events__c.label}" />
+                    <apex:inputField value="{!Quote__c.Annual_Number_of_Events__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Shot_Service_Load_Assistance_Hours__c.label}" />
+                    <apex:inputField value="{!Quote__c.Shot_Service_Load_Assistance_Hours__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Total_Number_of_Invoices__c.label}" />
+                    <apex:inputField value="{!Quote__c.Total_Number_of_Invoices__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Delivery_Direct_to_Customer_Site__c.label}" />
+                    <apex:inputField value="{!Quote__c.Delivery_Direct_to_Customer_Site__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Round_Trip_Truck_Distance__c.label}" />
+                    <apex:inputField value="{!Quote__c.Round_Trip_Truck_Distance__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Technical_Services_Required__c.label}" />
+                    <apex:inputField value="{!Quote__c.Technical_Services_Required__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.UoM__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Dewatering_Required__c.label}" />
+                    <apex:inputField value="{!Quote__c.Dewatering_Required__c}" />
+                </apex:pageBlockSectionItem>
+                <!--  <apex:pageBlockSectionItem /> -->
+                <!-- Rick added Dec 16 2011 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Delivery_via_Customer_Common_Carrier__c.label}" />
+                    <apex:inputField value="{!Quote__c.Delivery_via_Customer_Common_Carrier__c}" />
+                </apex:pageBlockSectionItem>    
+                <!-- Rick finished Dec 16 2011 -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Rental_Equipment_Required__c.label}" />
+                    <apex:inputField value="{!Quote__c.Rental_Equipment_Required__c}" />
+                </apex:pageBlockSectionItem>                                                                                                                                                                
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.QuotePDF_BP}">
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Volumetric_Parent_Product__c.label}" />
+                    <!-- <apex:inputField value="{!Quote__c.Volumetric_Parent_Product__c}" /> -->
+                    <apex:selectList size="1" value="{!Quote__c.Volumetric_Parent_Product__c}">
+                        <apex:selectOption itemValue="" itemLabel="--None--" />
+                        <apex:selectOptions value="{!VolumetricParentMaterials}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Volumetric_Parent_Product_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Volumetric_Parent_Product_UoM__c}" />
+                </apex:pageBlockSectionItem>            
+                    
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Volume_to_be_Blasted__c.label}" />
+                    <apex:inputField value="{!Quote__c.Volume_to_be_Blasted__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Volume_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Volume_UoM__c}" />
+                </apex:pageBlockSectionItem>
+                
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Volumetric_Per__c.label}" />
+                    <apex:inputField value="{!Quote__c.Volumetric_Per__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Holes_per_Event__c.label}" />
+                    <apex:inputField value="{!Quote__c.Holes_per_Event__c}" />
+                </apex:pageBlockSectionItem>
+                                                        
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Bench_Height__c.label}" />
+                    <apex:inputField value="{!Quote__c.Bench_Height__c}" />
+                </apex:pageBlockSectionItem>            
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Bench_Height_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Bench_Height_UoM__c}" />
+                </apex:pageBlockSectionItem>
+                                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Burden__c.label}" />
+                    <apex:inputField value="{!Quote__c.Burden__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Burden_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Burden_UoM__c}" />
+                </apex:pageBlockSectionItem>        
+                            
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Spacing__c.label}" />
+                    <apex:inputField value="{!Quote__c.Spacing__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Spacing_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Spacing_UoM__c}" />
+                </apex:pageBlockSectionItem>                
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Subdrill__c.label}" />
+                    <apex:inputField value="{!Quote__c.Subdrill__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Subdrill_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Subdrill_UoM__c}" />
+                </apex:pageBlockSectionItem>
+                                                                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Hole_Diameter__c.label}" />
+                    <apex:inputField value="{!Quote__c.Hole_Diameter__c}" />
+                </apex:pageBlockSectionItem>        
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Hole_Diameter_UoM__c.label}" />
+                    <apex:inputField value="{!Quote__c.Hole_Diameter_UoM__c}" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Rock_Specific_Gravity__c.label}" />
+                    <apex:inputField value="{!Quote__c.Rock_Specific_Gravity__c}" />
+                </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem rendered="{!NOT(CONTAINS($Profile.Name, 'End User'))}" >
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Volume_of_Explosives__c.label}" />
+                    <apex:inputField value="{!Quote__c.Volume_of_Explosives__c}" />
+                </apex:pageBlockSectionItem>        
+                                                                                                                                                                                                                                
+            </apex:pageBlockSection>                        
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

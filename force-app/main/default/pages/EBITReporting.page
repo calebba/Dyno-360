@@ -1,0 +1,429 @@
+<apex:page controller="EBITReporting" readonly="true">
+
+    <apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-1.6.2.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.css')}"/>
+    
+    <script type="text/javascript">
+        var j$ = jQuery.noConflict();
+    </script>
+    
+    <apex:form >
+        <apex:pageMessages id="errors" />
+        
+        <script type="text/javascript">
+            function hideCriteria() {
+                j$('#shrinkable').animate({
+                    height: 'toggle'
+                  }, 500, null);
+                j$('#hidebutton').val('Show criteria');
+            }
+            function showCriteria() {
+                j$('#shrinkable').animate({
+                    height: 'toggle'
+                  }, 500, null);
+                j$('#hidebutton').val('Hide criteria');
+            }
+            function switchCriteria() {
+                if (j$('#hidebutton').val() != 'Show criteria') {
+                    hideCriteria();
+                } else {
+                    showCriteria();
+                }
+            }
+        </script>
+        <div id="shrinkable" style="border:solid lightblue 1px;">
+        
+        <apex:pageBlock id="Criteria" title="{!$Label.EBITReportingCriteria}" mode="edit">
+            
+            <apex:pageBlockSection columns="2" collapsible="false" id="criteriaSelection1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Sales office" />
+                    <apex:outputPanel id="salesOffice">
+                        <!-- <apex:selectList value="{!salesOfficeValue}" size="1" id="salesOffice_i">
+                            <apex:selectOptions value="{!SalesOfficeOptions}" />
+                            <apex:actionSupport event="onchange" action="{!emptyLists}" rerender="xbuttons,customerControls,criteriaSelection1,criteriaSelection3,sites" onsubmit="disableGenerateButton();" />
+                        </apex:selectList> -->
+                        <apex:inputField value="{!dummySalesSite.SalesOffice_String__c}" required="false" id="salesOffice_i">
+                            <apex:actionSupport event="onchange" rerender="xbuttons,customerControls,criteriaSelection1,criteriaSelection3,sites" onsubmit="disableGenerateButton();" />
+                        </apex:inputField>
+                        <script type="text/javascript">
+                            function disableSalesOffice() {
+                                var so = document.getElementById('{!$Component.salesOffice_i}');
+                                so.disabled = true;
+                            }
+                        </script>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Account.fields.Account_Manager__c.label}" />
+                    <apex:outputPanel id="accountManagerList">
+                        <apex:inputField value="{!dummyAccount.Account_Manager__c}" required="false" id="accountManagerList_i">
+                            <apex:actionSupport event="onchange" action="{!emptyLists}" rerender="xbuttons,customerControls,criteriaSelection1,criteriaSelection3,sites" onsubmit="disableGenerateButton();" />
+                        </apex:inputField>
+                        <script type="text/javascript">
+                            function disableAccountManagers() {
+                                var acc = document.getElementById('{!$Component.accountManagerList_i}');
+                                acc.disabled = true;
+                            }
+                        </script>
+                        <!-- <apex:outputPanel rendered="{!NOT(accountManagerEditable)}">
+                            <script type="text/javascript">
+                                disableAccountManagers();
+                            </script>
+                        </apex:outputPanel> -->
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem />
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Account.fields.Industry.label}" /> 
+                    <apex:outputPanel id="industryList">
+                        <apex:inputField value="{!dummyAccount.Industry}" required="false" id="industry_i">
+                            <apex:actionSupport event="onchange" action="{!emptyLists}" rerender="xbuttons,customerControls,criteriaSelection1,criteriaSelection3,sites" onsubmit="disableGenerateButton();" />
+                        </apex:inputField>
+                        <script type="text/javascript">
+                            function disableIndustryList() {
+                                var industry = document.getElementById('{!$Component.industry_i}');
+                                industry.disabled = true;
+                            }
+                        </script>
+                        <!-- <apex:outputPanel rendered="{!NOT(industryEditable)}">
+                            <script type="text/javascript">
+                                disableIndustryList();
+                            </script>
+                        </apex:outputPanel> -->
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+            </apex:PageBlockSection>
+                
+            <apex:PageBlockSection id="customerControls">
+                <apex:pageBlockSectionItem rendered="{!showCustomerLookup}">
+                    <apex:outputLabel value="Customer Number" />
+                    <apex:outputPanel id="customernumberinput">
+                        <script type="text/javascript">
+                            function disableCustomerNumber() {
+                                var custnmbr = document.getElementById('{!$Component.customernumberinput_i}');
+                                custnmbr.disabled = true;
+                            }
+                        </script>
+                        <apex:inputText value="{!dummyQuoteCustomerNumber}" id="customernumberinput_i" disabled="{!NOT(accountEditable)}">
+                            <apex:actionSupport event="onblur" action="{!setCustomerNumber}" rerender="xbuttons,customerControls,criteriaSelection1,criteriaSelection3" onsubmit="disableCustomerNumber();disableCustomerName();disableGenerateButton();disableAddCustomerButton();" />
+                        </apex:inputText>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!showCustomerLookup}">
+                    <apex:outputPanel >
+                        <apex:outputLabel value="Selected Customers" /><br /><br />
+                        <i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+                    </apex:outputPanel>
+                    <apex:selectList value="{!selectedCust}" size="6" multiselect="true" style="min-width:150px" id="selectedCustomers">
+                        <apex:selectOptions value="{!selectedCustomersOptions}" />
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!showCustomerLookup}">
+                    <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Customer__c.label}" />
+                    <apex:outputPanel id="customernameinput">
+                        <script type="text/javascript">
+                            function disableCustomerName() {
+                                var custname = document.getElementById('{!$Component.customernameinput_i}');
+                                custname.disabled = true;
+                            }
+                        </script>
+                        <apex:inputField value="{!dummyQuote.Customer__c}" id="customernameinput_i">
+                            <apex:actionSupport event="onblur" action="{!setQuoteCustomer}" rerender="xbuttons,customerControls,criteriaSelection1,criteriaSelection3" onsubmit="disableCustomerNumber();disableCustomerName();disableGenerateButton();disableAddCustomerButton();" />
+                        </apex:inputField>
+                        <apex:commandButton action="{!addCustomer}" value="Add >>" id="addCustomerBtn" rerender="selectedCustomers,customernumberinput_i,customernameinput_i,sites,customeraccountgroup,xbuttons"/>
+                            <script type="text/javascript">
+                                function disableAddCustomerButton() {
+                                    var addbtn = document.getElementById('{!$Component.addCustomerBtn}');
+                                    addbtn.disabled = true;
+                                    addbtn.className = "btnPrimary publishersharebutton btnDisabled";
+                                }
+                            </script>
+                        <apex:outputPanel rendered="{!NOT(accountEditable)}">
+                            <script type="text/javascript">
+                                disableCustomerName();
+                                disableAddCustomerButton();
+                            </script>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem rendered="{!showCustomerLookup}">
+                    <apex:outputText />
+                    <apex:commandButton action="{!removeCustomer}" value="<< Remove" id="removeCustomerBtn" rerender="selectedCustomers,sites,xbuttons"/>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!showCustomerLookup}">
+                    <apex:outputLabel value="Account group" />
+                    <apex:outputPanel id="customeraccountgroup">
+                        {!customerAccountGroup}
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem rendered="{!showCustomerLookup}"/>
+
+                    <apex:pageBlockSectionItem rendered="{!showCustomerList}">
+                        <apex:outputPanel id="customersList">
+                            <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Customer__c.label}" /><br /><br />
+                            <i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+                        </apex:outputPanel>
+                        
+                        <apex:selectList value="{!customersIds}" size="6" multiselect="true" style="min-width:150px" id="customers">
+                            <apex:selectOptions value="{!CustomersList}" />
+                            <apex:actionSupport event="onchange" rerender="xbuttons,sites,criteriaSelection3" onsubmit="disableGenerateButton();" />
+                        </apex:selectList>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem rendered="{!NOT(showCustomerList)}"/>
+
+            </apex:PageBlockSection>
+            
+            <apex:PageBlockSection id="criteriaSelection3">
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputPanel >
+                        <apex:outputLabel value="{!$ObjectType.Quote__c.fields.Sales_Organization_Primary__c.label}" /><br /><br />
+                        <i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+                    </apex:outputPanel>
+                    
+                    <apex:selectList value="{!siteIds}" size="6" multiselect="true" style="min-width:150px" id="sites">
+                        <apex:selectOptions value="{!SiteOptions}" />
+                        <apex:actionSupport event="onchange" rerender="xbuttons" onsubmit="disableGenerateButton();" />
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <!-- <apex:pageBlockSectionItem >
+                    Plant
+                    <apex:selectList value="{!selectedPlant}" size="1">
+                        <apex:selectOptions value="{!PlantOptions}" />
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem /> -->
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.PandL_Reporting_From}" />
+                    <apex:outputPanel >
+                        <apex:selectList size="1" value="{!monthfrom}">
+                            <apex:selectOptions value="{!months}" />
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!yearfrom}">
+                            <apex:selectOptions value="{!years}" />
+                        </apex:selectList>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.PandL_Reporting_To}" />
+                    <apex:outputPanel >
+                        <apex:selectList size="1" value="{!monthto}">
+                            <apex:selectOptions value="{!months}" />
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!yearto}">
+                            <apex:selectOptions value="{!years}" />
+                        </apex:selectList>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    Currency
+                    <apex:selectList size="1" value="{!currentCurrency}">
+                        <apex:selectOption itemValue="CAD" itemLabel="CAD" />
+                        <apex:selectOption itemValue="USD" itemLabel="USD" />
+                    </apex:selectList> 
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputPanel id="xbuttons" layout="block">
+                        <div align="center">
+                            <apex:commandButton id="generatebutton" disabled="{!NOT(showGenerateButton)}" styleClass="btnPrimary publishersharebutton {! IF(showGenerateButton=true,'btn','btnDisabled')}" value="Generate EBIT" action="{!generateEBIT}" status="Generate" rerender="errors, Output, ReportsOutput, OutputBottomButtons, OutputTopButtons, xbuttons" onclick="disableGenerateButton();" oncomplete="hideCriteria();" />
+                            <script type="text/javascript">
+                                
+                                function disableGenerateButton() {
+                                    var genbtn = document.getElementById('{!$Component.generatebutton}');
+                                    genbtn.disabled = true;
+                                    genbtn.className = "btnPrimary publishersharebutton btnDisabled";
+                                }
+                            </script>
+                            <br />
+                            <apex:actionStatus id="Generate" startText="{!$Label.Edit_Status_Start}">
+                                <apex:facet name="start">
+                                    <img src="{!URLFOR($Resource.JQueryFiles, 'ajax-loader.gif')}" />
+                                    Please wait while the reports are being generated
+                                </apex:facet>
+                            </apex:actionStatus>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+        </div>
+        <div align="right">
+            <input type="button" id="hidebutton" class="btnImportant" onclick="switchCriteria(); return false;" value="Hide criteria" />
+        </div>
+        
+        <br /><br /><br />
+        
+        <!-- pageRef.getParameters().put('accountIds', accountIdsString);
+        pageRef.getParameters().put('sitesIdsList', sitesIdsListString);
+        pageRef.getParameters().put('dateFrom', string.valueOf(dummyQuote.Price_Valid_From__c));
+        pageRef.getParameters().put('dateTo', string.valueOf(dummyQuote.Price_Valid_to__c));
+        pageRef.getParameters().put('currentCurrency', string.valueOf(currentCurrency)); -->
+        
+        
+        <apex:outputPanel id="OutputTopButtons">
+            <apex:pageBlock rendered="{!showGeneratePdfButton}" title="Results">
+                <apex:outputPanel id="ybuttons" layout="block">
+                    <div align="center">
+                    	<apex:pagemessages />
+                        <apex:commandButton id="generatePdfbutton" styleClass="btnPrimary publishersharebutton btn" value="Generate PDF" action="{!generatePDF}" status="Generate" onclick="disableGeneratePdfButton();" />
+                        <apex:commandButton id="generateExcelbutton" styleClass="btnPrimary publishersharebutton btn" value="Generate Excel" action="{!generateExcel}" />
+                        <script type="text/javascript">
+                            function disableGenerateExcelButton() {
+                                var genbtn = document.getElementById('{!$Component.generateExcelbutton}');
+                                //genbtn.disabled = true;
+                                genbtn.className = "btnPrimary publishersharebutton btnDisabled";
+                            }
+                        </script>
+                        <script type="text/javascript">
+                            function disableGeneratePdfButton() {
+                                var genbtn = document.getElementById('{!$Component.generatePdfbutton}');
+                                //genbtn.disabled = true;
+                                genbtn.className = "btnPrimary publishersharebutton btnDisabled";
+                            }
+                        </script>
+                        <br />
+                        <apex:actionStatus id="Generate" startText="{!$Label.Edit_Status_Start}">
+                            <apex:facet name="start">
+                                <img src="{!URLFOR($Resource.JQueryFiles, 'ajax-loader.gif')}" />
+                                Please wait while the reports are being generated
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </div>
+                </apex:outputPanel>
+            </apex:pageBlock>
+        </apex:outputPanel>
+        
+        <apex:outputPanel id="Output">
+            <apex:outputPanel id="InsideOutput" rendered="{!isGenerated}" layout="block" style="font-size:75%">
+                <br />
+                <div id="genreports">
+                    <c:PandL data="{!plDataReport}" />
+                </div>
+                <br /><br />
+                <script type="text/javascript">
+                    j$(document).ready(function() {
+                        j$("#genreports").tabs();
+                    });
+                </script>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        
+        
+        <!-- <apex:outputPanel id="OutputTopButtons">
+            <apex:pageBlock rendered="{!NOT(ISNULL(reportsList))}" title="Results">
+                <apex:pageBlockButtons location="Top">
+                    <apex:commandButton id="topPrev" styleClass="btnPrimary publishersharebutton btn" value="Previous" action="{!previousPage}" rerender="Output,OutputBottomButtons,OutputTopButtons" rendered="{!currPage > 1}" status="Generate" onclick="disableTopButtons();disableBottomButtons();" />
+                    <apex:outputPanel >
+                        &nbsp;&nbsp;&nbsp;{!currPage} / {!maxPage}&nbsp;&nbsp;&nbsp; 
+                    </apex:outputPanel>
+                    <apex:commandButton id="topNext" styleClass="btnPrimary publishersharebutton btn" value="Next" action="{!nextPage}" rerender="Output,OutputBottomButtons,OutputTopButtons" rendered="{!currPage < maxPage}" status="Generate" onclick="disableTopButtons();disableBottomButtons();" />
+                    <apex:outputPanel id="topOP" style="display:none;">
+                        <br />
+                        <img src="{!URLFOR($Resource.JQueryFiles, 'ajax-loader.gif')}" />
+                        Please wait while the reports are being generated
+                    </apex:outputPanel>
+                    <script type="text/javascript">
+                        function disableTopButtons() {
+                            var prevbtn1 = document.getElementById('{!$Component.topPrev}');
+                            if (prevbtn1 != null) {
+                                prevbtn1.disabled = true;
+                                prevbtn1.className = "btnPrimary publishersharebutton btnDisabled";
+                            }
+                            var nextbtn1 = document.getElementById('{!$Component.topNext}');
+                            if (nextbtn1 != null) {
+                                nextbtn1.disabled = true;
+                                nextbtn1.className = "btnPrimary publishersharebutton btnDisabled";
+                            }
+                            var btmOP1 = document.getElementById('{!$Component.topOP}');
+                            btmOP1.style.display = "";
+                        }
+                    </script>
+                </apex:pageBlockButtons>
+            </apex:pageBlock>
+        </apex:outputPanel>
+        <apex:outputPanel id="Output">
+            <apex:outputPanel id="InsideOutput" rendered="{!NOT(ISNULL(reportsList))}" layout="block" style="font-size:75%">
+                <br />
+                <div id="genreports">
+                    <ul>
+                        <apex:repeat value="{!reportsList}" var="plDataReport" id="theRepeatForPLDataTitle" >
+                            <li>
+                                <a href="#tabs-{!plDataReport.siteId}-{!plDataReport.sapCustomerNumber}">
+                                    {!plDataReport.TabName}
+                                </a>
+                            </li>
+                        </apex:repeat>
+                    </ul>
+                    <apex:variable var="count" value="{!0}"/>
+                    <apex:repeat value="{!reportsList}" var="plDataReport" id="theRepeatForPLData" >
+                        <div id="tabs-{!plDataReport.siteId}-{!plDataReport.sapCustomerNumber}">
+                            <div style="height:950px;">
+                                <c:PandL data="{!plDataReport}" />
+                                <apex:variable var="count" value="{!count + 1}"/>
+                            </div>
+                            <br /><br /><br /><br />
+                        </div>
+                    </apex:repeat>
+                </div>
+                <br /><br />
+                <script type="text/javascript">
+                    j$(document).ready(function() {
+                        j$("#genreports").tabs();
+                    });
+                </script>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel id="OutputBottomButtons">
+            <apex:pageBlock rendered="{!NOT(ISNULL(reportsList))}">
+                <apex:pageBlockButtons location="Top">
+                    <apex:commandButton id="bottomPrev" styleClass="btnPrimary publishersharebutton btn" value="Previous" action="{!previousPage}" rerender="Output,OutputBottomButtons,OutputTopButtons" rendered="{!currPage > 1}" status="Generate" onclick="disableTopButtons();disableBottomButtons();" />
+                    <apex:outputPanel >
+                        &nbsp;&nbsp;&nbsp;{!currPage} / {!maxPage}&nbsp;&nbsp;&nbsp; 
+                    </apex:outputPanel>
+                    <apex:commandButton id="bottomNext" styleClass="btnPrimary publishersharebutton btn" value="Next" action="{!nextPage}" rerender="Output,OutputBottomButtons,OutputTopButtons" rendered="{!currPage < maxPage}" status="Generate" onclick="disableTopButtons();disableBottomButtons();" />
+                    <apex:outputPanel id="bottomOP" style="display:none;">
+                        <br />
+                        <img src="{!URLFOR($Resource.JQueryFiles, 'ajax-loader.gif')}" />
+                        Please wait while the reports are being generated
+                    </apex:outputPanel>
+                    <script type="text/javascript">
+                        function disableBottomButtons() {
+                            var prevbtn1 = document.getElementById('{!$Component.bottomPrev}');
+                            if (prevbtn1 != null) {
+                                prevbtn1.disabled = true;
+                                prevbtn1.className = "btnPrimary publishersharebutton btnDisabled";
+                            }
+                            var nextbtn1 = document.getElementById('{!$Component.bottomNext}');
+                            if (nextbtn1 != null) {
+                                nextbtn1.disabled = true;
+                                nextbtn1.className = "btnPrimary publishersharebutton btnDisabled";
+                            }
+                            var btmOP1 = document.getElementById('{!$Component.bottomOP}');
+                            btmOP1.style.display = "";
+                        }
+                    </script>
+                </apex:pageBlockButtons>
+            </apex:pageBlock>
+        </apex:outputPanel>
+         -->
+
+    </apex:form>
+</apex:page>

@@ -1,0 +1,761 @@
+<apex:page controller="RealizationReport" sidebar="false">
+	<apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-1.6.2.min.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.min.js')}"/>
+	<apex:stylesheet value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.css')}"/>
+	
+	<script type="text/javascript">
+       var j$ = jQuery.noConflict();
+	</script>
+	
+	<apex:form >
+	
+	 	<apex:pageMessages id="errors" />
+		
+		<script type="text/javascript">
+			function hideCriteria() {
+				j$('#shrinkable').animate({
+				    height: 'toggle'
+				  }, 500, null);
+				j$('#hidebutton').val('{!$Label.RealizationReportShowCriteria}');
+			}
+			function showCriteria() {
+				j$('#shrinkable').animate({
+				    height: 'toggle'
+				  }, 500, null);
+				j$('#hidebutton').val('{!$Label.RealizationReportHideCriteria}');
+			}
+			function switchCriteria() {
+				if (j$('#hidebutton').val() != '{!$Label.RealizationReportShowCriteria}') {
+					hideCriteria();
+				} else {
+					showCriteria();
+				}
+			}
+		</script>
+		<div id="shrinkable" style="border:solid lightblue 1px;">
+		
+		<apex:pageBlock id="Criteria" title="{!$Label.RealizationReportCriteria}" mode="edit">
+			
+			<apex:pageBlockSection columns="2" title="Filter Criteria">
+			
+				<!-- Other criteria --> 
+				<apex:pageBlockSectionItem >
+					From Date:
+					<apex:inputField value="{!dummyQuote.Price_Valid_From__c}" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					To Date:
+					<apex:inputField value="{!dummyQuote.Price_Valid_To__c}" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="Account Number" />
+					<apex:outputPanel id="customernumberinput">
+						<apex:inputText value="{!customerNumber}" id="customernumberinput_i" disabled="{!NOT(accountEditable)}">
+							<apex:actionSupport event="onchange" action="{!CustomerNumberChanged}" rerender="xbuttons,customerinput,customernumberinput,RSMListPanel,AccManListPanel,CompanyListPanel,regions,salesSites" onsubmit="disableCustomerNumber();disableCustomerName();disableGenerateButton();disableResetButton();" />
+						</apex:inputText>
+						<script type="text/javascript">
+							function disableCustomerNumber() {
+								var custnmbr = document.getElementById('{!$Component.customernumberinput_i}');
+								custnmbr.disabled = true;
+							}
+						</script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem> 
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="Account" />
+					<apex:outputPanel id="customerinput">
+						<apex:inputField value="{!dummyQuote.Customer__c}" label="{!$Label.RealizationReportAccount}" id="customernameinput_i">
+							<apex:actionSupport event="onchange" action="{!CustomerChanged}" rerender="xbuttons,customerinput,customernumberinput,RSMListPanel,AccManListPanel,CompanyListPanel,regions,salesSites" onsubmit="disableCustomerNumber();disableCustomerName();disableGenerateButton();disableResetButton();" />
+						</apex:inputField>
+						<script type="text/javascript">
+							function disableCustomerName() {
+								var custname = document.getElementById('{!$Component.customernameinput_i}');
+								custname.disabled = true;
+							}
+						</script>
+						<apex:outputPanel rendered="{!NOT(accountEditable)}">
+							<script type="text/javascript">
+								disableCustomerName();
+							</script>
+						</apex:outputPanel>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem />
+				
+				<!-- Organization -->
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						Sales Manager:<br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+					</apex:outputPanel>
+					<apex:outputPanel id="RSMListPanel">
+						<apex:selectList value="{!salesMs}" id="rsminput" size="6" multiselect="true" disabled="{!dummyQuote.Customer__c != null}">
+							<apex:selectOptions value="{!availableSalesMs}" />
+							<apex:actionSupport event="onchange" action="{!ClearAccount}" rerender="customerinput,customernumberinput" />
+						</apex:selectList>
+						<script type="text/javascript" language="Javascript">
+                            function setFocus(){
+                                    var mytext = document.getElementById('{!$Component.rsminput}'); 
+                                    mytext.focus();
+                            }
+                            function addEvent(obj, evType, fn){ 
+                                    if (obj.addEventListener){ 
+                                            obj.addEventListener(evType, fn, false); 
+                                               return true; 
+                                    } else if (obj.attachEvent){ 
+                                               var r = obj.attachEvent("on"+evType, fn); 
+                                               return r; 
+                                    } else { 
+                                               return false; 
+                                    } 
+                            }
+                            addEvent(window, 'load', setFocus);
+                        </script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						Account Manager:<br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+					</apex:outputPanel>
+					<apex:outputPanel id="AccManListPanel">
+						<apex:selectList value="{!accReps}" size="6" multiselect="true" disabled="{!dummyQuote.Customer__c != null}">
+							<apex:selectOptions value="{!availableAccReps}" />
+							<apex:actionSupport event="onchange" action="{!ClearAccount}" rerender="customerinput,customernumberinput" />
+						</apex:selectList>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="{!$Label.RealizationReportCompany}" />
+					<apex:outputPanel id="CompanyListPanel">
+						<apex:selectList value="{!CompanyId}" size="1" disabled="{!dummyQuote.Customer__c != null}">
+							<apex:selectoptions value="{!CompanyIds}" />
+							<apex:actionSupport event="onchange" rerender="regions,salesSites,customerinput,customernumberinput" action="{!GetRegions}" onsubmit="disableRegs();disableSsts();" />
+						</apex:selectList>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="{!$Label.RealizationReportRegion}" />
+					<apex:outputPanel id="regions">
+						<apex:selectList value="{!RegionId}" size="1" id="regsinput" disabled="{!dummyQuote.Customer__c != null}">
+							<apex:selectoptions value="{!RegionIds}" />
+							<apex:actionSupport event="onchange" rerender="salesSites,customerinput,customernumberinput" action="{!GetSalesSites}" onsubmit="disableSsts();" />
+						</apex:selectList>
+						<script type="text/javascript">
+							function disableRegs() {
+								var inputname = document.getElementById('{!$Component.regsinput}');
+								inputname.disabled = true;
+							}
+						</script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem> 
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="{!$Label.RealizationReportSite}" />
+					<apex:outputPanel id="salesSites">
+						<apex:selectList value="{!SalesSiteId}" size="1" id="sstsinput" disabled="{!dummyQuote.Customer__c != null}">
+							<apex:selectoptions value="{!SalesSiteIds}" />
+							<apex:actionSupport event="onchange" action="{!ClearAccount}" rerender="customerinput,customernumberinput" />
+						</apex:selectList> 
+						<script type="text/javascript">
+							function disableSsts() {
+								var inputname = document.getElementById('{!$Component.sstsinput}');
+								inputname.disabled = true;
+							}
+						</script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem> 
+				<apex:pageBlockSectionItem /> 
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem />
+				
+				<!-- PHLs / Products -->
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="PHL1" />
+					<apex:outputPanel >
+						<apex:selectList value="{!PHL1Id}" size="1" id="phl1input">
+							<apex:selectoptions value="{!PHL1Ids}" />
+							<apex:actionSupport event="onchange" rerender="phl2s,phl3s,materials" action="{!GetPHL2s}" onsubmit="disablePHL2();disablePHL3();disableMats();" />
+						</apex:selectList>
+						<script type="text/javascript">
+							function disablePHL1() {
+								var inputname = document.getElementById('{!$Component.phl1input}');
+								inputname.disabled = true;
+							}
+						</script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="PHL2" />
+					<apex:outputPanel id="phl2s">
+						<apex:selectList value="{!PHL2Id}" size="1" id="phl2input">
+							<apex:selectoptions value="{!PHL2Ids}" />
+							<apex:actionSupport event="onchange" rerender="phl3s,materials" action="{!GetPHL3s}" onsubmit="disablePHL3();disableMats();" />
+						</apex:selectList>
+						<script type="text/javascript">
+							function disablePHL2() {
+								var inputname = document.getElementById('{!$Component.phl2input}');
+								inputname.disabled = true;
+							}
+						</script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem> 
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="PHL3" />
+					<apex:outputPanel id="phl3s">
+						<apex:selectList value="{!PHL3Id}" size="1" id="phl3input">
+							<apex:selectoptions value="{!PHL3Ids}" />
+							<apex:actionSupport event="onchange" rerender="materials" action="{!GetMaterials}" onsubmit="disableMats();" />
+						</apex:selectList>
+						<script type="text/javascript">
+							function disablePHL3() {
+								var inputname = document.getElementById('{!$Component.phl3input}');
+								inputname.disabled = true;
+							}
+						</script>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputlabel value="{!$Label.RealizationReportProduct}" />
+					<apex:outputPanel id="materials">
+						<apex:outputPanel rendered="{!NOT(AND(PHL1Id = '',PHL2Id = '',PHL3Id = ''))}">
+							<apex:selectList value="{!MaterialId}" size="1" id="matsinput">
+								<apex:selectoptions value="{!MaterialIds}" />
+							</apex:selectList>
+							<script type="text/javascript">
+								function disableMats() {
+									var inputname = document.getElementById('{!$Component.matsinput}');
+									inputname.disabled = true;
+								}
+							</script>
+						</apex:outputPanel>
+						<apex:outputPanel rendered="{!AND(PHL1Id = '',PHL2Id = '',PHL3Id = '')}">
+							<apex:inputText value="{!materialCode}" id="matinput">
+								<apex:actionsupport event="onchange" action="{!MaterialCodeSet}" rerender="materials" />
+							</apex:inputText>
+							<script type="text/javascript">
+								function disableMats() {
+									var inputname = document.getElementById('{!$Component.matinput}');
+									inputname.disabled = true;
+								}
+							</script>
+						</apex:outputPanel> 
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<apex:outputPanel id="groupingbydiv">
+				<apex:pageBlockSection columns="2" title="Grouping">
+					<!-- First grouping -->
+					<apex:pageBlockSectionItem >
+						First Group by:
+						<apex:selectList value="{!GroupByFirst}" size="1">
+							<apex:selectOptions value="{!GroupByFirstList}" />
+							<apex:actionSupport event="onchange" rerender="groupingbydiv" action="{!FirstSelected}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByFirst = 'Product'}">
+						Product:
+						<apex:selectList value="{!GroupByProduct}" size="1">
+							<apex:selectOptions value="{!GroupByProductList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByFirst = 'Sales Structure'}">
+						Sales Structure:
+						<apex:selectList value="{!GroupBySales}" size="1">
+							<apex:selectOptions value="{!GroupBySalesList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByFirst = 'Organization'}">
+						Organization:
+						<apex:selectList value="{!GroupByOrganization}" size="1">
+							<apex:selectOptions value="{!GroupByOrganizationList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					
+					<!-- Second grouping -->
+					<apex:pageBlockSectionItem >
+						Second Group by:
+						<apex:selectList value="{!GroupBySecond}" size="1">
+							<apex:selectOptions value="{!GroupBySecondList}" />
+							<apex:actionSupport event="onchange" rerender="groupingbydiv" action="{!SecondSelected}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupBySecond = 'Product'}">
+						Product:
+						<apex:selectList value="{!GroupByProduct}" size="1">
+							<apex:selectOptions value="{!GroupByProductList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupBySecond = 'Sales Structure'}">
+						Sales Structure:
+						<apex:selectList value="{!GroupBySales}" size="1">
+							<apex:selectOptions value="{!GroupBySalesList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupBySecond = 'Organization'}">
+						Organization:
+						<apex:selectList value="{!GroupByOrganization}" size="1">
+							<apex:selectOptions value="{!GroupByOrganizationList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupBySecond = ''}" />
+	
+					<!-- Third grouping -->
+					<apex:pageBlockSectionItem rendered="{!NOT(GroupBySecond = '')}">
+						Third Group by:
+						<apex:selectList value="{!GroupByThird}" size="1">
+							<apex:selectOptions value="{!GroupByThirdList}" />
+							<apex:actionSupport event="onchange" rerender="groupingbydiv" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByThird = ''}" />
+					<apex:pageBlockSectionItem rendered="{!GroupByThird = 'Product'}">
+						Product:
+						<apex:selectList value="{!GroupByProduct}" size="1">
+							<apex:selectOptions value="{!GroupByProductList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByThird = 'Sales Structure'}">
+						Sales Structure:
+						<apex:selectList value="{!GroupBySales}" size="1">
+							<apex:selectOptions value="{!GroupBySalesList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByThird = 'Organization'}">
+						Organization:
+						<apex:selectList value="{!GroupByOrganization}" size="1">
+							<apex:selectOptions value="{!GroupByOrganizationList}" />
+						</apex:selectList>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem rendered="{!GroupByThird = ''}" />
+				</apex:pageBlockSection>
+			</apex:outputPanel>
+						
+			<apex:pageBlockSection columns="1">
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel id="xbuttons" layout="block">
+						<div align="center">
+							<!-- 
+							<apex:commandButton id="generatebatchbutton" styleClass="btnPrimary publishersharebutton btn" value="{!$Label.RealizationReportButton} Batch" action="{!GenerateBatch}" status="Generate" rerender="errors, Output, xbuttons, CriteriaButtonPanel" onclick="disableGenerateButton();disableResetButton();" oncomplete="hideCriteria();" />
+							 -->
+							<apex:commandButton id="generatebutton" styleClass="btnPrimary publishersharebutton btn" value="{!$Label.RealizationReportButton}" action="{!Generate}" status="Generate" rerender="errors, Output, xbuttons, CriteriaButtonPanel" onclick="disableGenerateButton();disableResetButton();" oncomplete="hideCriteria();" />
+							<apex:commandButton id="resetbutton" styleClass="btnPrimary publishersharebutton btn" value="Reset Filters" action="{!ResetFilters}" status="Generate" rerender="Criteria" onclick="disableGenerateButton();disableResetButton();" />
+							<script type="text/javascript">
+								function disableGenerateButton() {
+									var genbtn = document.getElementById('{!$Component.generatebutton}');
+									genbtn.disabled = true;
+									genbtn.className = "btnPrimary publishersharebutton btnDisabled";
+								}
+								function disableResetButton() {
+									var genbtn = document.getElementById('{!$Component.resetbutton}'); 
+									genbtn.disabled = true;
+									genbtn.className = "btnPrimary publishersharebutton btnDisabled";
+								}
+							</script>
+							<br />
+							<apex:actionStatus id="Generate" startText="{!$Label.Edit_Status_Start}">
+								<apex:facet name="start">
+									<img src="{!URLFOR($Resource.JQueryFiles, 'ajax-loader.gif')}" />
+									{!$Label.Edit_Status_Start}
+								</apex:facet>
+							</apex:actionStatus>
+						</div>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	
+		</div>
+		<div align="right">
+			<apex:outputPanel id="CriteriaButtonPanel">
+				<apex:outputPanel rendered="{!ShowCriteriaButton}">
+					<input type="button" id="hidebutton" class="btnImportant" onclick="switchCriteria(); return false;" value="{!$Label.RealizationReportHideCriteria}" />
+				</apex:outputPanel>
+			</apex:outputPanel>
+		</div>
+		
+		<br /><br /><br />
+		
+	
+		<apex:outputPanel id="Output">
+			<apex:messages />
+
+			<apex:outputPanel rendered="{!NOT(StepNumber0)}">
+				<apex:PageBlock id="GenerateBatchPB">
+					<apex:pageBlockSection rendered="{!StepNumber1}">
+						<apex:outputLabel value="{!Step1Text}" />
+						<apex:commandButton value="Cancel" action="{!CancelBatch1}" rendered="{!NOT(ShowCriteriaButton)}" />
+						<apex:actionPoller action="{!GenerateBatchStep2}" rerender="GenerateBatchPB,CriteriaButtonPanel" interval="5"/>
+					</apex:pageBlockSection>
+					<apex:pageBlockSection rendered="{!StepNumber2}">
+						<apex:outputLabel value="{!Step2Text}" />
+						<apex:commandButton value="Cancel" action="{!CancelBatch2}" rendered="{!NOT(ShowCriteriaButton)}" />
+						<apex:actionPoller action="{!GenerateBatchStep3}" rerender="GenerateBatchPB,CriteriaButtonPanel" interval="5"/>
+					</apex:pageBlockSection>
+					<apex:pageBlockSection rendered="{!StepNumber3}">
+						<apex:outputLabel value="{!Step3Text}" />
+						<apex:commandButton value="Cancel" action="{!CancelBatch3}" rendered="{!NOT(ShowCriteriaButton)}" />
+						<apex:actionPoller action="{!GenerateBatchStep4}" rerender="GenerateBatchPB,CriteriaButtonPanel" interval="5"/>
+					</apex:pageBlockSection>
+					<apex:pageBlockSection rendered="{!StepNumber4}">
+						<apex:outputLabel value="{!Step4Text}" />
+					</apex:pageBlockSection>
+				</apex:PageBlock>
+			</apex:outputPanel>
+
+			<apex:pageBlock rendered="{!PricesGenerated}" title="Details">
+				<apex:pageBlockButtons >
+					<apex:commandButton value="Export Details" action="{!ExportDetails}" />
+					<apex:commandButton value="Export Summary" action="{!ExportSummary}" />
+				</apex:pageBlockButtons>
+				<style>
+					table.realization-details {
+						border:solid gray 1px;
+						border-collapse:collapse;
+					}
+					table.realization-details th, table.realization-details td {
+						border:solid gray 1px;
+					}
+					table.realization-details thead.top {
+						background-color: #BBBBBB;
+					}
+					table.realization-details thead.grouplevel1 {
+						background-color: #CCCCCC;
+					}
+					table.realization-details thead.grouplevel2 {
+						background-color: #DDDDDD;
+					}
+					table.realization-details thead.grouplevel3 {
+						background-color: #EEEEEE;
+					}
+				</style>
+				<table class="realization-details" width="100%">
+					<thead class="top">
+						<tr>
+							<th>Count</th>
+							<th colspan="11"></th>
+							<th>Previous Price Rev($)</th>
+							<th>Current Price Rev($)</th>
+							<th>Realization(%)</th>
+							<th>Realization($)</th>
+						</tr>
+					</thead>
+					
+					<apex:repeat value="{!Lines}" var="GL1">
+						<thead class="grouplevel1">
+							<tr>
+								<th>{!GL1.Count}</th>
+								<th colspan="11">{!GL1.Name}</th>
+								<th>
+									<apex:outputText value="{0,number,$#,##0.00}">
+										<apex:param value="{!GL1.PreviousPriceRev}" />
+									</apex:outputText>
+								</th>
+								<th>
+									<apex:outputText value="{0,number,$#,##0.00}">
+										<apex:param value="{!GL1.CurrentPriceRev}" />
+									</apex:outputText>
+								</th>
+								<th>
+									<apex:outputText value="{0,number,0.00%}">
+										<apex:param value="{!GL1.RealizationPercent}" />
+									</apex:outputText>
+								</th>
+								<th>
+									<apex:outputText value="{0,number,$#,##0.00}">
+										<apex:param value="{!GL1.Realization}" />
+									</apex:outputText>
+								</th>
+							</tr>
+						</thead>
+						<apex:outputPanel layout="none" rendered="{!NOT(GL1.isDeeper)}">
+							<thead>
+								<tr>
+									<th style="text-align:right;"></th>
+									<th style="text-align:right;">Account Number</th>
+									<th style="text-align:right;">PHL1</th>
+									<th style="text-align:right;">PHL2</th>
+									<th style="text-align:right;">PHL3</th>
+									<th style="text-align:right;">Material Code</th>
+									<th style="text-align:right;">Previous Price</th>
+									<th style="text-align:right;">Current Price</th>
+									<th style="text-align:right;">Per</th>
+									<th style="text-align:right;">UOM</th>
+									<th style="text-align:right;">Current Volume</th>
+									<th style="text-align:right;">Price Change($)</th>
+									<th style="text-align:right;">Previous Price Rev($)</th>
+									<th style="text-align:right;">Current Price Rev($)</th>
+									<th style="text-align:right;">Realization(%)</th>
+									<th style="text-align:right;">Realization($)</th>
+								</tr>
+							</thead>
+							<apex:repeat value="{!GL1.Lines}" var="LI1">
+								<tr>
+									<td style="text-align:right;"></td>
+									<td style="text-align:right;">{!LI1.AccountNumber}</td>
+									<td style="text-align:right;">{!LI1.PHL1}</td>
+									<td style="text-align:right;">{!LI1.PHL2}</td>
+									<td style="text-align:right;">{!LI1.PHL3}</td>
+									<td style="text-align:right;">{!LI1.MaterialCode}</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,$#,##0.00}">
+											<apex:param value="{!LI1.PreviousPrice}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,$#,##0.00}">
+											<apex:param value="{!LI1.CurrentPrice}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">{!LI1.Per}</td>
+									<td style="text-align:right;">{!LI1.UOM}</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,#,##0}">
+											<apex:param value="{!LI1.CurrentVolume}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,$#,##0.00}">
+											<apex:param value="{!LI1.PriceChange}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,$#,##0.00}">
+											<apex:param value="{!LI1.PreviousPriceRev}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,$#,##0.00}">
+											<apex:param value="{!LI1.CurrentPriceRev}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,0.00%}">
+											<apex:param value="{!LI1.RealizationPercent}" />
+										</apex:outputText>
+									</td>
+									<td style="text-align:right;">
+										<apex:outputText value="{0,number,$#,##0.00}">
+											<apex:param value="{!LI1.Realization}" />
+										</apex:outputText>
+									</td>
+								</tr>
+							</apex:repeat>
+						</apex:outputPanel>
+						<apex:outputPanel layout="none" rendered="{!GL1.isDeeper}">
+							<apex:repeat value="{!GL1.Groups}" var="GL2">
+								<thead class="grouplevel2">
+									<tr>
+										<th>{!GL2.Count}</th>
+										<th colspan="11">{!GL2.Name}</th>
+										<th>
+											<apex:outputText value="{0,number,$#,##0.00}">
+												<apex:param value="{!GL2.PreviousPriceRev}" />
+											</apex:outputText>
+										</th>
+										<th>
+											<apex:outputText value="{0,number,$#,##0.00}">
+												<apex:param value="{!GL2.CurrentPriceRev}" />
+											</apex:outputText>
+										</th>
+										<th>
+											<apex:outputText value="{0,number,0.00%}">
+												<apex:param value="{!GL2.RealizationPercent}" />
+											</apex:outputText>
+										</th>
+										<th>
+											<apex:outputText value="{0,number,$#,##0.00}">
+												<apex:param value="{!GL2.Realization}" />
+											</apex:outputText>
+										</th>
+									</tr>
+								</thead>
+								<apex:outputPanel layout="none" rendered="{!NOT(GL2.isDeeper)}">
+									<thead>
+										<tr>
+											<th style="text-align:right;"></th>
+											<th style="text-align:right;">Account Number</th>
+											<th style="text-align:right;">PHL1</th>
+											<th style="text-align:right;">PHL2</th>
+											<th style="text-align:right;">PHL3</th>
+											<th style="text-align:right;">Material Code</th>
+											<th style="text-align:right;">Previous Price</th>
+											<th style="text-align:right;">Current Price</th>
+											<th style="text-align:right;">Per</th>
+											<th style="text-align:right;">UOM</th>
+											<th style="text-align:right;">Current Volume</th>
+											<th style="text-align:right;">Price Change($)</th>
+											<th style="text-align:right;">Previous Price Rev($)</th>
+											<th style="text-align:right;">Current Price Rev($)</th>
+											<th style="text-align:right;">Realization(%)</th>
+											<th style="text-align:right;">Realization($)</th>
+										</tr>
+									</thead>
+									<apex:repeat value="{!GL2.Lines}" var="LI2">
+										<tr>
+											<td style="text-align:right;"></td>
+											<td style="text-align:right;">{!LI2.AccountNumber}</td>
+											<td style="text-align:right;">{!LI2.PHL1}</td>
+											<td style="text-align:right;">{!LI2.PHL2}</td>
+											<td style="text-align:right;">{!LI2.PHL3}</td>
+											<td style="text-align:right;">{!LI2.MaterialCode}</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,$#,##0.00}">
+													<apex:param value="{!LI2.PreviousPrice}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,$#,##0.00}">
+													<apex:param value="{!LI2.CurrentPrice}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">{!LI2.Per}</td>
+											<td style="text-align:right;">{!LI2.UOM}</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,#,##0}">
+													<apex:param value="{!LI2.CurrentVolume}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,$#,##0.00}">
+													<apex:param value="{!LI2.PriceChange}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,$#,##0.00}">
+													<apex:param value="{!LI2.PreviousPriceRev}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,$#,##0.00}">
+													<apex:param value="{!LI2.CurrentPriceRev}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,0.00%}">
+													<apex:param value="{!LI2.RealizationPercent}" />
+												</apex:outputText>
+											</td>
+											<td style="text-align:right;">
+												<apex:outputText value="{0,number,$#,##0.00}">
+													<apex:param value="{!LI2.Realization}" />
+												</apex:outputText>
+											</td>
+										</tr>
+									</apex:repeat>
+								</apex:outputPanel>
+								<apex:outputPanel layout="none" rendered="{!GL2.isDeeper}">
+									<apex:repeat value="{!GL2.Groups}" var="GL3">
+										<thead class="grouplevel3">
+											<tr>
+												<th>{!GL3.Count}</th>
+												<th colspan="11">{!GL3.Name}</th>
+												<th>
+													<apex:outputText value="{0,number,$#,##0.00}">
+														<apex:param value="{!GL3.PreviousPriceRev}" />
+													</apex:outputText>
+												</th>
+												<th>
+													<apex:outputText value="{0,number,$#,##0.00}">
+														<apex:param value="{!GL3.CurrentPriceRev}" />
+													</apex:outputText>
+												</th>
+												<th>
+													<apex:outputText value="{0,number,0.00%}">
+														<apex:param value="{!GL3.RealizationPercent}" />
+													</apex:outputText>
+												</th>
+												<th>
+													<apex:outputText value="{0,number,$#,##0.00}">
+														<apex:param value="{!GL3.Realization}" />
+													</apex:outputText>
+												</th>
+											</tr>
+										</thead>
+										<apex:outputPanel layout="none">
+											<thead>
+												<tr>
+													<th style="text-align:right;"></th>
+													<th style="text-align:right;">Account Number</th>
+													<th style="text-align:right;">PHL1</th>
+													<th style="text-align:right;">PHL2</th>
+													<th style="text-align:right;">PHL3</th>
+													<th style="text-align:right;">Material Code</th>
+													<th style="text-align:right;">Previous Price</th>
+													<th style="text-align:right;">Current Price</th>
+													<th style="text-align:right;">Per</th>
+													<th style="text-align:right;">UOM</th>
+													<th style="text-align:right;">Current Volume</th>
+													<th style="text-align:right;">Price Change($)</th>
+													<th style="text-align:right;">Previous Price Rev($)</th>
+													<th style="text-align:right;">Current Price Rev($)</th>
+													<th style="text-align:right;">Realization(%)</th>
+													<th style="text-align:right;">Realization($)</th>
+												</tr>
+											</thead>
+											<apex:repeat value="{!GL3.Lines}" var="LI3">
+												<tr>
+													<td style="text-align:right;"></td>
+													<td style="text-align:right;">{!LI3.AccountNumber}</td>
+													<td style="text-align:right;">{!LI3.PHL1}</td>
+													<td style="text-align:right;">{!LI3.PHL2}</td>
+													<td style="text-align:right;">{!LI3.PHL3}</td>
+													<td style="text-align:right;">{!LI3.MaterialCode}</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,$#,##0.00}">
+															<apex:param value="{!LI3.PreviousPrice}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,$#,##0.00}">
+															<apex:param value="{!LI3.CurrentPrice}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">{!LI3.Per}</td>
+													<td style="text-align:right;">{!LI3.UOM}</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,#,##0}">
+															<apex:param value="{!LI3.CurrentVolume}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,$#,##0.00}">
+															<apex:param value="{!LI3.PriceChange}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,$#,##0.00}">
+															<apex:param value="{!LI3.PreviousPriceRev}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,$#,##0.00}">
+															<apex:param value="{!LI3.CurrentPriceRev}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,0.00%}">
+															<apex:param value="{!LI3.RealizationPercent}" />
+														</apex:outputText>
+													</td>
+													<td style="text-align:right;">
+														<apex:outputText value="{0,number,$#,##0.00}">
+															<apex:param value="{!LI3.Realization}" />
+														</apex:outputText>
+													</td>
+												</tr>
+											</apex:repeat>
+										</apex:outputPanel>
+									</apex:repeat>
+								</apex:outputPanel>
+							</apex:repeat>
+						</apex:outputPanel>
+					</apex:repeat>
+				</table>
+			</apex:pageBlock>
+		</apex:outputPanel>
+		
+	</apex:form>
+	
+</apex:page>

@@ -1,0 +1,10 @@
+<apex:component >
+	<apex:attribute name="currency" type="CurrencyData" required="true" description="CurrencyData object that holds the Currency symbol and value."/>
+	<apex:attribute name="paddedValues" description="This is the padded decimal values." type="Integer" required="false" default="2"/>
+	<apex:attribute name="conversionCheck" description="This is the padded decimal values." type="Boolean" required="false" default="false" />
+		<apex:variable var="IsoConverted" value="{!IF(currency.currencyISOCode=' ', '','$')}"/>
+		<apex:variable var="valueBeforePeriod"  value="{!IF(contains(currency.displayValue, '.'), LEFT(currency.displayValue,IF(paddedValues=0,FIND('.',currency.displayValue,0)-1,FIND('.',currency.displayValue,0))), If(paddedValues=0, currency.displayValue,currency.displayValue& '.'))}"/>
+		<apex:variable var="valueAfterPeriod"   value="{!IF(contains(currency.displayValue, '.'), RIGHT(currency.displayValue,IF(paddedValues=0,LEN(currency.displayValue) -FIND('.',currency.displayValue,0),LEN(currency.displayValue)-FIND('.',currency.displayValue,0))),IF(paddedValues=0,'','0'))}"/>
+	  {!IF(conversionCheck, IsoConverted, currency.currencyIsoCode)}&nbsp;{!valueBeforePeriod}{!RPAD(valueAfterPeriod,paddedValues,'0')} 
+	
+</apex:component>

@@ -1,0 +1,54 @@
+<apex:page Controller="ManualPublishScenario" >
+
+    <apex:form >
+    <apex:pageMessages id="errors" />
+            <apex:pageBlock >
+            <br/> 
+            
+                    This will Publish to SAP, ie create PCA records for marked Scenarios<br/>
+                    Marked Scenarios are ones that have had the field 'Manual_Publish_SAP__c' = '1'<br/><br/>
+                    You will be notified by email when completed.
+                    
+            
+        </apex:pageBlock>
+    
+    <apex:pageBlock title="Scenarios to be published" >
+    <apex:pageBlockButtons location="top"  >
+                <apex:outputPanel id="reloadButtons">
+                    <apex:commandButton value="Run Publish to SAP on marked Scnearios" action="{!ManualPubToSAPLaunch}" rerender="reloadButtons,errors" disabled="{!publishButtonDisabled}" />
+                    
+                    <apex:commandButton value="Re-load Scenarios" action="{!ReloadScenario}" rendered="{!isButtonShown}" rerender="scenarioTable,reloadButtons" />
+                </apex:outputPanel>
+            </apex:pageBlockButtons>
+            <br/>
+    <apex:dataTable value="{!scenarios}"
+                    var="scenario"
+                    cellPadding="4" border="1"
+                    id="scenarioTable">
+               
+      <apex:column headerValue="ID">
+       <apex:outputLabel value="{!scenario.id}" />
+      </apex:column>              
+      <apex:column headerValue="Scenario Name">
+        <apex:outputlink value="/{!scenario.id}">{!scenario.name}</apex:outputlink>
+      </apex:column>
+      <apex:column headerValue="Account">
+        <apex:outputLabel value="{!scenario.Opportunity__r.Account.Name}" />
+        
+      </apex:column>
+       <apex:column headerValue="Published to SAP">
+        <apex:outputText value="{0,date,MM'/'dd'/'yyy}">
+            <apex:param value="{!scenario.Date_Published_to_SAP__c}"/>
+            </apex:outputText>
+      </apex:column>
+      
+       <apex:column headerValue="Quote Owner">
+        <apex:outputLabel value="{!scenario.Opportunity__r.Owner.Name}" />
+      </apex:column>
+      <apex:column headerValue="Parent Quote Stage">
+        <apex:outputLabel value="{!scenario.Opportunity__r.StageName}" />
+      </apex:column>  
+    </apex:dataTable>
+  </apex:pageBlock>
+</apex:form>
+</apex:page>

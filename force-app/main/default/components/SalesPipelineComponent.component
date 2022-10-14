@@ -1,0 +1,202 @@
+<apex:component >
+  <apex:attribute name="xAxis" description="The x-axis value."
+                    type="integer" required="true"/>
+
+  <apex:attribute name="yAxis" description="The y-axis value."
+                    type="integer" required="true"/>
+
+  <apex:attribute name="markupName" description="The x-axis value."
+                    type="string" required="true"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/heatmap.js"></script>
+    <script type="text/javascript" src="https://code.highcharts.com/modules/treemap.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+
+    <script type="text/javascript">
+            // ------------------------------ SCATTER CHART ----------------------------
+      var data = [];
+      var updating = false;
+
+      $(document).ready(function() {
+      console.log('{!xAxis}');
+      console.log('{!yAxis}');
+      console.log('{!markupName}');
+
+        var xAxisData = parseFloat('{!xAxis}');
+        var yAxisData = parseFloat('{!yAxis}');
+        data = [{x:xAxisData , y:yAxisData, Name:'{!markupName}'}];
+
+        data = JSON.parse(JSON.stringify(data).split('"Score_x":').join('"x":'));
+        data = JSON.parse(JSON.stringify(data).split('"Score_y":').join('"y":'));
+
+        console.log('data is ', data);
+
+        var chart = new Highcharts.Chart({
+          chart: {
+              renderTo: 'container',
+              defaultSeriesType:'scatter',
+              borderWidth:1,
+              borderColor:'#ccc',
+              marginLeft:0,
+              marginRight:0,
+              marginTop:0,
+              marginBottom:0
+          },
+          marker: {
+              radius: 3
+          },
+          credits:{enabled:false},
+          exporting: { enabled: false },
+          title:{
+              text:''
+          },
+          legend:{
+              enabled:false
+          },
+          tooltip: {
+              /*formatter: function() {
+
+                return '<b>'+ this.point.Name +'</b><br/>'+
+                    this.x +' : '+ this.y;
+              }*/
+              enabled: false
+          },
+          plotOptions: {
+              series: {
+                  shadow:false,
+              }
+          },
+          subtitle: {
+           text: document.ontouchstart === undefined ?
+               '' :
+               ''
+          },
+          xAxis:{
+              title:{
+                  text:'Account Desirability'
+              },
+              min:6,
+              max:10.00,
+              tickInterval:0.5,
+              tickLength:0,
+              minorTickLength:0,
+              // gridLineWidth:1,
+              gridLineColor : 'grey',
+              showLastLabel:false,
+              showFirstLabel:false,
+              // lineColor:'black',
+              // lineWidth:1,
+              type: 'number',
+              events: {
+
+                  afterSetExtremes: function (event) {
+                      var index = document.getElementById('container').dataset.highchartsChart;
+                      var chartPartner = Highcharts.charts[index];
+                      if (!updating) {
+                          updating = true;
+                          chartPartner.xAxis[0].setExtremes(event.min, event.max);
+                          chartPartner.showResetZoom();
+                      } else {
+                          updating = false;
+                      }
+                  }
+              },
+              minRange: 1 // fourteen days// fourteen days
+          },
+
+          yAxis:{
+              title:{
+                  text:'Barriers to Pursue Business',
+                  rotation:-90,
+                  margin:5,
+              },
+              min:0,
+              max:3,
+              // maxZoom: 3,
+              tickInterval:0.5,
+              tickLength:0,
+              gridLineColor : 'transparent',
+              minorTickLength:0,
+              lineWidth: 0,
+              minorGridLineWidth: 0,
+              lineColor: 'transparent'
+              // lineColor:'black',
+              // lineWidth:1
+          },
+          series: [{
+              color:'#185aa9',
+              pointInterval: 0.5,
+              pointStart: 6,
+              data: data
+
+          }]
+        }, function(chart) { // on complete
+
+
+              console.log('-------->', chart.plotBox);
+              var width = chart.plotBox.width / 2.0;
+              var height = chart.plotBox.height / 2.0 + 1;
+
+              chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, width, height, 1) // Top Left
+
+                  .attr({
+                      fill: '#ff9e9e',
+                      zIndex: 0
+                  })
+
+                  .add();
+
+           chart.renderer.rect(chart.plotBox.x + width,
+                                  chart.plotBox.y, width, height, 1) // Top Right
+                  .attr({
+                      fill: '#ffe79e',
+                      zIndex: 0
+
+                  })
+                  .add();
+
+          chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y + height, width, height, 1) // Bottom Left
+                  .attr({
+                      fill: '#f8cdb0',
+                      zIndex: 0
+                  })
+                  .add();
+
+          chart.renderer.rect(chart.plotBox.x + width,
+                                  chart.plotBox.y + height, width, height, 1) // Bottom Right
+                  .attr({
+                      fill: '#bdcfb2',
+                      zIndex: 0
+                  })
+                  .add();
+
+
+
+        });
+
+        $("input").click( function() {
+          console.log('HHHHHHHHHHHHHHHH');
+          console.log(chart.xAxis[0]);
+         chart.xAxis[0].setExtremes(8,10);
+        });
+
+      });
+            // ------------------------ END OF SCATTER CHART ----------------------------
+
+    </script>
+
+
+        <body>
+            <div style="display: inline-block;vertical-align: top;min-width: 36%;text-align: right;padding-right: 3%;"><span style="color: #4a4a56;text-align: right;font-size: 82%;font-weight: bold;font-family: Arial,Helvetica,sans-serif;">National Sales Pipeline Target</span></div>
+            <div id="container" style="min-width: 62px; height: 50px; max-width: 62px;display: inline-block;vertical-align:bottom"></div>
+            <apex:image id="pipelinedetails" value="{!$Resource.PipelineDetails}" onclick="window.open('https://c.na60.visual.force.com/apex/SalesPipelineScatterChart?sfdc.tabName=01r0c000001Gbgr')" height="28" width="85"/>
+        </body>
+
+</apex:component>

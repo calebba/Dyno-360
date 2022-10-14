@@ -1,0 +1,37 @@
+<apex:page standardController="Case" extensions="hd_FORCEHelpdeskExtension" tabStyle="FORCE_Helpdesk__tab">
+	<apex:sectionHeader title="New FORCE HelpDesk Case"/>
+	
+	<apex:form >
+		<apex:pageMessages id="errors" />
+	
+		<apex:pageBlock title="Case Edit" mode="edit" >
+			<apex:pageBlockButtons >
+				<apex:commandButton value="Save" action="{!Save}" />
+				<apex:commandButton value="Cancel" action="{!Cancel}" />
+			</apex:pageBlockButtons>
+			
+			<apex:pageBlockSection title="Case Information">
+				<apex:pageBlockSection columns="1">
+					<apex:inputField value="{!Case.Reason}" required="true"/>
+					<apex:inputField value="{!Case.Priority}" required="true" />
+				</apex:pageBlockSection>
+				<apex:pageBlockSection columns="1">
+					<apex:inputField value="{!Case.ContactId}" required="true"/>
+				</apex:pageBlockSection>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection title="Description Information" columns="1">
+				<apex:inputField value="{!Case.Subject}" required="true" style="width:500px;"/>
+				<apex:inputField value="{!Case.Description}" required="true" style="width:500px;height:100px;"/>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection title="Attachment" columns="1">
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="Attachment" />
+					<apex:inputFile accept="doc, txt, jpg, gif" filename="{!filename}" 
+							contentType="{!contentType}" fileSize="1000" size="49" value="{!newAttachment}" />
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

@@ -1,0 +1,38 @@
+<apex:page standardController="Material_Item__c" extensions="MaterialScenarioRelatedListExtension">
+	<apex:form >
+		<apex:sectionHeader title="Scenarios" subtitle="{!Material_Item__c.Name}"/>
+		
+		<apex:pageBlock >
+			<!-- <apex:pageBlockButtons >
+				<apex:commandButton value="Replace Material in all Active Scenarios" action="{!startReplaceProc}"/>
+			</apex:pageBlockButtons> -->
+			
+			<apex:pageBlockTable value="{!Scenarios}" var="scenario">
+				<apex:column >
+					<apex:facet name="header">{!$ObjectType.Quote__c.fields.Name.label}</apex:facet>
+					<apex:outputLink value="/{!scenario.Id}">{!scenario.Name}</apex:outputLink>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">{!$ObjectType.Quote__c.fields.Quote_Valid_From__c.label}</apex:facet>
+					<apex:outputField value="{!scenario.Quote_Valid_From__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">{!$ObjectType.Quote__c.fields.Quote_Valid_To__c.label}</apex:facet>
+					<apex:outputField value="{!scenario.Quote_Valid_To__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">{!$ObjectType.Quote__c.fields.Approval_Status__c.label}</apex:facet>
+					<apex:outputField value="{!scenario.Approval_Status__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">{!$ObjectType.Quote__c.fields.Price_Valid_From__c.label}</apex:facet>
+					<apex:outputField value="{!scenario.Quote_Valid_From__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">{!$ObjectType.Quote__c.fields.Price_Valid_To__c.label}</apex:facet>
+					<apex:outputField value="{!scenario.Quote_Valid_To__c}"/>
+				</apex:column>
+			</apex:pageBlockTable>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

@@ -1,0 +1,58 @@
+<apex:page standardController="DynoConsult_Job_Detail__c" extensions="DCJobDetailControllerExtension"  id="thePage" standardStylesheets="true">
+
+  <apex:form >
+  
+ 
+  <apex:pageBlock title="Job Item Detail">
+  <apex:pageBlockButtons location="both">
+        <apex:commandButton action="{!newSave}" value="Save" />
+        <apex:commandButton action="{!cancel}" value="Cancel" />
+  </apex:pageBlockButtons>
+  <apex:pageMessages ></apex:pageMessages>
+
+  <apex:pageBlockSection columns="1" title="Job Details"  showHeader="false">
+         
+      <apex:outputField value="{!DynoConsult_Job_Detail__c.DynoConsult_Job__c}"/>  
+      
+      <apex:pageblocksectionitem >
+          <apex:outputlabel >Material</apex:outputlabel>
+          <apex:outputpanel layout="block" styleClass="requiredInput">
+              <apex:outputpanel layout="block" styleClass="requiredBlock"></apex:outputpanel>
+              <apex:selectList value="{!selectedMaterial}" required="true" label="Material" multiselect="false" size="1">
+                  <apex:selectOptions value="{!materialOptions}" />
+                  <apex:actionSupport event="onchange" rerender="editableFields" action="{!MaterialSelected}"/>
+                
+                  
+              </apex:selectList>
+          </apex:outputpanel>
+       </apex:pageblocksectionitem>   
+        
+      <apex:inputField value="{!DynoConsult_Job_Detail__c.Units__c}" >
+            <apex:actionSupport event="onchange" rerender="editableFields" action="{!CalculateTotal}"/>
+        </apex:inputField>     
+      
+        
+        
+        
+        
+        
+        </apex:pageblockSection>
+        <apex:pageblockSection id="editableFields" columns="1">
+        
+        <apex:inputField value="{!DynoConsult_Job_Detail__c.Unit_Cost__c}" >
+            <apex:actionSupport event="onchange" rerender="editableFields" action="{!CalculateTotal}"/>
+        </apex:inputField>
+
+         <apex:outputField value="{!DynoConsult_Job_Detail__c.UOM__c}" label="Unit of Measure" />
+         <apex:outputText value="{!TotalCostDisplay}" label="Total Price"/>
+          
+         <apex:outputPanel rendered="false">
+            <apex:inputField value="{!DynoConsult_Job_Detail__c.Total_Cost__c}" />
+            <apex:inputField value="{!DynoConsult_Job_Detail__c.Material__r.Material_Description__c}" />
+        </apex:outputPanel>  
+           
+        </apex:pageBlockSection>   
+     </apex:pageBlock>
+
+  </apex:form>
+</apex:page>

@@ -1,0 +1,149 @@
+<apex:page controller="SuggestedActionsController">
+
+<apex:stylesheet value="{!URLFOR($Resource.Assets, 'assets/css/PandLPDF.css')}" />
+
+	<br />
+	<apex:outputPanel id="theHeader">
+	<div id="header">
+		<table class="typeOne">
+			<tr>
+				<td align="center" colspan="6" style="border:solid;">
+					<div class="typeTwo"><apex:outputLabel id="acctHeader" value="{!IF(OR(ISNULL(dataAccount.Name), ISBLANK(dataAccount.Name)), $Label.RA_Init, dataAccount.Name)}" /></div>
+					<div class="typeThree">{!$Label.SA_Title}</div>
+					<div class="typeFour">{!$Label.PandLPDF_Date}: {!IF(ISNULL(startDate), 'TBD', TEXT(startDate) & ' - ' & TEXT(endDate))}</div>
+				</td>
+				<td align="center" colspan="2" style="border:solid;">
+					<apex:image url="{!URLFOR($Resource.Assets, 'assets/img/Dynologo.jpg')}" />
+				</td>
+			</tr>
+			<tr>
+				<td align="center" width="12%" style="border:solid;">
+					<div>{!$Label.Company}</div>
+					<div class="typeNine"><apex:outputLabel id="salesOrgCountry" value="{!IF(OR(ISNULL(fillInSalesSite.Company_Site__r.Name), ISBLANK(fillInSalesSite.Company_Site__r.Name)), 'TBD', fillInSalesSite.Company_Site__r.Name)}" /></div>
+				</td>
+				<td align="center" width="12%" style="border:solid;">
+					<div>{!$Label.PandLGenerationSalesSite}</div>
+					<div class="typeNine"><apex:outputLabel id="salesOrgHeader" value="{!IF(OR(ISNULL(fillInSalesSite.Name), ISBLANK(fillInSalesSite.Name)), 'TBD', fillInSalesSite.Name)}" /></div>
+				</td>
+				<td align="center" width="14%" style="border:solid;">
+					<div>{!$Label.RA_SoldToNo}</div>
+				<div class="typeNine"><apex:outputLabel id="salesOrgSAPHeader" value="{!IF(OR(ISNULL(dataAccount.SAP_Account_Number__c), ISBLANK(dataAccount.SAP_Account_Number__c)), 'TBD', dataAccount.SAP_Account_Number__c)}" /></div>
+				</td>
+				<td align="center" width="15%" style="border:solid;">
+					<div>{!$Label.RA_ShipToNo}</div>
+					<div class="typeNine"><apex:outputLabel id="acctSAPHeader" value="{!IF(OR(ISNULL(shipToAccount.SAP_Account_Number__c), ISBLANK(shipToAccount.SAP_Account_Number__c)), 'TBD', shipToAccount.SAP_Account_Number__c)}" /></div>
+				</td>
+				<td align="center" width="25%" style="border:solid;">
+					<div>{!$Label.RA_ShipToName}</div>
+					<div class="typeNine"><apex:outputLabel id="acctNameHeader" value="{!IF(OR(ISNULL(shipToAccount.Name), ISBLANK(shipToAccount.Name)), 'TBD', shipToAccount.Name)}" /></div>
+				</td>
+				<td align="center" width="7.25%" style="border:solid;">
+					<div>{!$Label.RA_GM}</div>
+						<div class="typeNine">{!IF(ISNULL(gm), 'TBD', $Label.CurrencyUS & TEXT(ROUND(gm,0)))}</div>
+				</td>
+				<td align="center" width="7.25%" style="border:solid;">
+					<div>{!$Label.RA_CM}</div>
+					<div class="typeNine">{!IF(ISNULL(cm), 'TBD', $Label.CurrencyUS & TEXT(ROUND(cm,0)))}</div>
+				</td>
+				<td align="center" width="7.5%" style="border:solid;">
+					<div>{!$Label.RA_Ebita}</div>
+					<div class="typeNine">{!IF(ISNULL(ebita), 'TBD', $Label.CurrencyUS & TEXT(ROUND(ebita,0)))}</div>
+				</td>																				
+			</tr>	
+		</table>
+	</div>
+	</apex:outputPanel>
+	<!-- END HEADER -->	
+	
+	
+		<apex:form id="optionForm">
+				<table class="typeOne">
+			<tr>
+				<td align="center" colspan="6" style="border:solid;">
+				
+				<apex:pageBlock mode="edit">
+					<apex:pageBlockSection title="{!$Label.SuggestedActions_EnterEbit}" columns="7" id="fillindata">
+					<div class="typeFour">
+					
+						<apex:pageBlockSectionItem labelStyle="width:5%" dataStyle="width:16.5%;">
+							<apex:outputLabel value="{!$Label.PandLPDF_Ebita}"/>
+							<apex:inputText value="{!EBITAGoal}" />
+						</apex:pageBlockSectionItem>
+					 
+						<apex:pageBlockSectionItem labelStyle="width:8.5%;" dataStyle="width:10.5%;">
+							<apex:outputLabel value="{!$ObjectType.Opportunity.fields.AccountId.label}: " />
+							<apex:inputField value="{!fillInParentAcc.ParentId}"/>
+						</apex:pageBlockSectionItem>
+						
+						<apex:pageBlockSectionItem labelStyle="width:8.5%;" dataStyle="width:10.5%;">
+							<apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Sales_Site__c.label}: " />
+							<apex:inputField value="{!dummyQuote.Sales_Organization_Primary__c}"/>	
+						</apex:pageBlockSectionItem>
+						
+						<apex:pageBlockSectionItem labelStyle="width:5.5%;" dataStyle="width:10.5%;">
+							<apex:outputLabel value="{!$Label.PandL_Reporting_From}" />
+							<apex:inputField value="{!dummyQuote.Price_Valid_From__c}"/>	
+						</apex:pageBlockSectionItem>
+						
+						<apex:pageBlockSectionItem labelStyle="width:5.5%;" dataStyle="width:10.5%;">
+							<apex:outputLabel value="{!$Label.PandL_Reporting_To}" />
+							<apex:inputField value="{!dummyQuote.Price_Valid_To__c}"/>	
+						</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem dataStyle="width:10.5%;">
+					<apex:commandButton value="Analyze" action="{!performAnalyzation}" status="doAnalyze" rerender="theHeader,theContent" />
+					<apex:actionStatus id="doAnalyze" startText="{!$Label.Suggested_Action_Calculate}" />
+					</apex:pageBlockSectionItem>
+					<br/>
+					<br/>
+					</div>
+					</apex:pageBlockSection>
+			</apex:pageBlock>
+				</td>
+			</tr>
+			</table>
+		</apex:form>
+
+	<apex:outputPanel id="theContent">
+		<div id="content">
+			<table class="typeOne">
+				<tr>
+					<td style="border:solid;" align="center">{!$Label.Suggested_Actions_Title}</td>										
+				</tr>
+				
+				</table>
+			</div>	
+			<div>
+				
+				<table class="typeOne">
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_1}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_1}</td>
+				</tr>
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_2}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_2}</td>
+				</tr>
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_3}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_3}</td>
+				</tr>
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_4}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_4}</td>
+				</tr>
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_5}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_5}</td>
+				</tr>
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_6}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_6}</td>
+				</tr>
+				<tr>
+					<td width="70%" style="border:solid;" align="left">{!$Label.suggestedActions_7}</td>
+					<td width="30%" style="border:solid;" align="center">{!suggested_7}</td>
+				</tr>
+			</table>
+		</div>
+	</apex:outputPanel>
+</apex:page>

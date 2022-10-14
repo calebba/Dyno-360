@@ -1,0 +1,14 @@
+ .customPopup{
+       
+            background-color: white;
+            border-style: solid;
+            border-width: 2px;
+            left: 20%;
+            padding:10px;
+            position: absolute;
+            z-index: 9999;
+            width: 60%;
+            margin-left: 25px;
+            top:7%;
+            
+        }

@@ -1,0 +1,107 @@
+<apex:page controller="ChooseContractApprovals" >
+	<apex:form id="mainForm">
+		<apex:PageMessages />
+		<apex:pageBlock >
+			<apex:pageBlockSection title="Tender Review">
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						<apex:outputLabel value="Select Users" /><br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+					</apex:outputPanel>
+					<apex:outputPanel id="reviewUsersList">
+						<apex:selectList value="{!selectedUsers}" size="6" multiselect="true" style="min-width:150px" id="selectedUsers">
+							<apex:selectOptions value="{!usersList}" />
+						</apex:selectList>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<apex:commandButton action="{!addTenderRev}" value="Add >>" id="addUsersBtn" rerender="mainForm,selectedTenderRev,reviewUsersList"/>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						<apex:outputLabel value="Selected Users" /><br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i><br/><br/>
+						<apex:commandButton action="{!removeTenderRev}" value="<< Remove" id="remUsersBtn" />
+					</apex:outputPanel>
+					<apex:outputPanel id="selectedTenderRev">
+						<apex:selectList value="{!selectedTenderRev}" size="6" multiselect="true" style="min-width:150px" >
+							<apex:selectOptions value="{!SelectedTenderRevList}" />
+						</apex:selectList>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection title="Tender Approval">
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						<apex:outputLabel value="Select Users" /><br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+					</apex:outputPanel>
+					<apex:outputPanel id="TenderAppList">
+						<apex:selectList value="{!selectedUsersTenderApp}" size="6" multiselect="true" style="min-width:150px" id="selectedUsers">
+							<apex:selectOptions value="{!usersTenderAppList}" />
+						</apex:selectList>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<apex:commandButton action="{!addTenderApp}" value="Add >>" id="addUsersAppBtn" rerender="mainForm,selectedTenderApp,TenderAppList"/>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						<apex:outputLabel value="Selected Users" /><br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i><br/><br/>
+						<apex:commandButton action="{!removeTenderApp}" value="<< Remove" id="remUsersAppBtn" />
+					</apex:outputPanel>
+					<apex:outputPanel id="selectedTenderApp">
+						<apex:selectList value="{!selectedTenderApp}" size="6" multiselect="true" style="min-width:150px" >
+							<apex:selectOptions value="{!SelectedTenderAppList}" />
+						</apex:selectList>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection title="Contract Approval">
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						<apex:outputLabel value="Select Users" /><br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i>
+					</apex:outputPanel>
+					<apex:outputPanel id="ContractAppList">
+						<apex:selectList value="{!selectedUsersContractApp}" size="6" multiselect="true" style="min-width:150px">
+							<apex:selectOptions value="{!usersContractAppList}" />
+						</apex:selectList>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<apex:commandButton action="{!addContractApp}" value="Add >>" id="addUsersContractAppBtn" rerender="mainForm,selectedContractApp,ContractAppList"/>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+				
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >
+						<apex:outputLabel value="Selected Users" /><br /><br />
+						<i>(Hold down the<br /> CTRL key to select<br /> multiple records)</i><br/><br/>
+						<apex:commandButton action="{!removeContractApp}" value="<< Remove" id="remUsersContractAppBtn" />
+					</apex:outputPanel>
+					<apex:outputPanel id="selectedContractApp">
+						<apex:selectList value="{!selectedContractApp}" size="6" multiselect="true" style="min-width:150px" >
+							<apex:selectOptions value="{!SelectedContractAppList}" />
+						</apex:selectList>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<!--<apex:pageBlockSection columns="1">
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel id="xbuttons" layout="block">
+						<div align="center">
+							<apex:commandButton id="savebutton" value="Save" action="{!save}" />
+						</div>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>-->
+			<apex:pageBlockButtons location="bottom">
+				<apex:commandButton action="{!cancel}" value="Cancel" style="width:130px;"/>
+				<apex:commandButton action="{!save}" value="Save" style="width:130px;"/>
+			</apex:pageBlockButtons>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

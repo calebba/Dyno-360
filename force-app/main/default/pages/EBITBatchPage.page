@@ -1,0 +1,24 @@
+<apex:page controller="EBITReporting" action="{!EXCELEBITBatchPageControllerS}" readonly="true">
+	<apex:form >
+		<apex:outputPanel id="ResultsPanel" rendered="{!GeneratePressed}">
+			
+			<apex:pageBlock title="Generating..." rendered="{!BatchStarted}">
+				<apex:pageBlockButtons location="Top">
+					<apex:commandButton value="Cancel" action="{!EXCELCancelBatch}" rendered="{!NOT(EXCELBatchDone)}" />
+					<apex:commandButton value="Open Document" action="{!EXCELOpenDocument}" rendered="{!EXCELBatchDone}" />
+				</apex:pageBlockButtons>
+				<apex:pageBlockSection columns="1">
+					<apex:pageBlockSectionItem >
+						{!BatchMessage}
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem >
+						<apex:actionPoller action="{!EXCELCheckBatch}" rerender="ResultsPanel" interval="5"/>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>
+			</apex:pageBlock>
+			
+		</apex:outputPanel>
+	
+	</apex:form>
+
+</apex:page>

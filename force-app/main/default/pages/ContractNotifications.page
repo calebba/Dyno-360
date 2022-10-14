@@ -1,0 +1,286 @@
+<apex:page standardController="Dyno_Nobel_Contract__c" extensions="ContractNotifications">
+    
+    <apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-1.6.2.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.min.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.JQueryFiles, 'jquery-ui-1.8.16.custom.css')}"/>
+
+    
+    <script type="text/javascript">
+       var j$ = jQuery.noConflict();
+    </script>
+      <apex:form >
+    <apex:pageBlock >
+
+        <apex:pageBlockButtons >
+           <apex:commandButton action="{!Cancel}" value="Return to Contract"/>
+        </apex:pageBlockButtons>    
+
+        <apex:pageBlockSection columns="1">
+            <apex:pageBlockSectionItem >
+                <apex:outputPanel >
+                    <table width="100%" class="ui-widget">
+                        <thead class="ui-widget-header">
+                            <tr>
+                                <th></th>
+                                <th>Tender Under Review Notification List</th>
+                                <th>Tender Approver List</th>
+                                <th>Contract Approver List</th>
+                            </tr>
+                        </thead>
+                        <tbody class="ui-widget-content">
+                            <tr>
+                                <th>Pricing Analyst</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Pricing_Analyst__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Pricing_Analyst__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Pricing_Analyst__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Regional Sales Manager</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Regional_Sales_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Regional_Sales_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Regional_Sales_Manager__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>General Manager</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.General_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.General_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.General_Manager__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>IS Product Manager</th>
+                                <td>
+                                    <apex:outputText rendered="{!hasISSelected}" value="{!Dyno_Nobel_Contract__c.IS_Product_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!hasISSelected}" value="{!Dyno_Nobel_Contract__c.IS_Product_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!hasISSelected}" value="{!Dyno_Nobel_Contract__c.IS_Product_Manager__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Service Manager</th>
+                                <td>
+                                    <apex:outputText rendered="{!hasServiceSelected}" value="{!Dyno_Nobel_Contract__c.Service_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Service_Manager__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Service_Manager__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>AN Product Manager</th>
+                                <td>
+                                    <apex:outputText rendered="{!hasANSelected}" value="{!Dyno_Nobel_Contract__c.AN_Product_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!hasANSelected}" value="{!Dyno_Nobel_Contract__c.AN_Product_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!hasANSelected}" value="{!Dyno_Nobel_Contract__c.AN_Product_Manager__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Logistics Manager</th>
+                                <td>
+                                    <apex:outputText rendered="{!hasTransportationSelected}" value="{!Dyno_Nobel_Contract__c.Logistics_Manager__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Logistics_Manager__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Logistics_Manager__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>VP</th>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 1500000}" value="{!Dyno_Nobel_Contract__c.VP__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 1500000}" value="{!Dyno_Nobel_Contract__c.VP__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 1500000}" value="{!Dyno_Nobel_Contract__c.VP__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>President</th>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.President__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 3000000 || (Dyno_Nobel_Contract__c.Term_In_Months__c >= 36 && Dyno_Nobel_Contract__c.Term_In_Months__c < 60 )}" value="{!Dyno_Nobel_Contract__c.President__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 3000000 || (Dyno_Nobel_Contract__c.Term_In_Months__c >= 36 && Dyno_Nobel_Contract__c.Term_In_Months__c < 60 )}" value="{!Dyno_Nobel_Contract__c.President__r.Name}" />
+                                </td>
+                            </tr>
+                            <!--2012.07.13 Added by Jason Taylor Per Feedback from Rick Nash -->
+                            <tr>
+                                <th>CEO</th>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.President__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 5000000}" value="{!Dyno_Nobel_Contract__c.CEO__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 5000000 || Dyno_Nobel_Contract__c.Term_In_Months__c >= 60}" value="{!Dyno_Nobel_Contract__c.CEO__r.Name}" />
+                                </td>
+                            </tr>
+                            <!--2012.07.13 Added by Jason Taylor Per Feedback from Rick Nash -->                         
+                            
+                            <tr>
+                                <th>Financial Reviewer</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Financial_Reviewer__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Financial_Reviewer__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Financial_Reviewer__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Senior Financial Reviewer</th>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 3000000}" value="{!Dyno_Nobel_Contract__c.Senior_Financial_Reviewer__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Senior_Financial_Reviewer__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 3000000}" value="{!Dyno_Nobel_Contract__c.Senior_Financial_Reviewer__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Legal Reviewer</th>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Has_the_Customer_Proposed_a_Contract__c = 'Yes'}" value="{!Dyno_Nobel_Contract__c.Legal_Reviewer__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Has_the_Customer_Proposed_a_Contract__c = 'Yes'}" value="{!Dyno_Nobel_Contract__c.Legal_Reviewer__r.Name}" />
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Has_the_Customer_Proposed_a_Contract__c = 'Yes'}" value="{!Dyno_Nobel_Contract__c.Legal_Reviewer__r.Name}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Senior Legal Reviewer</th>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Senior_Legal_Reviewer__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Senior_Legal_Reviewer__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!OR(Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 10000000, Dyno_Nobel_Contract__c.Term_In_Months__c > 60)}" value="{!Dyno_Nobel_Contract__c.Senior_Legal_Reviewer__r.Name}" />
+                                    <!--<apex:outputText rendered="{!AND(Dyno_Nobel_Contract__c.Has_the_Customer_Proposed_a_Contract__c="Yes", OR(Dyno_Nobel_Contract__c.Estimated_Annual_Revenue__c > 10000000, Dyno_Nobel_Contract__c.Term_In_Months__c > 60))}" value="{!Dyno_Nobel_Contract__c.Senior_Legal_Reviewer__r.Name}" />
+                                    Updated by Jason 6/13-->
+ 
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Director of Strategic Accounts</th>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Director_of_Strategic_Accounts__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <apex:outputText rendered="{!Dyno_Nobel_Contract__c.Is_this_designated_a_Global_Strategic_Cu__c = 'Yes'}" value="{!Dyno_Nobel_Contract__c.Director_of_Strategic_Accounts__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Director_of_Strategic_Accounts__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Optional Reviewer 1</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_1__r.Name}" />
+                                    <!--<apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_1__r.Name}" />-->
+                 
+                                    </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_1__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_1__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Optional Reviewer 2</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_2__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_2__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_2__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Optional Reviewer 3</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_3__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_3__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_3__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Optional Reviewer 4</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_4__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_4__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_4__r.Name}" /> -->
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Optional Reviewer 5</th>
+                                <td>
+                                    <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_5__r.Name}" />
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_5__r.Name}" /> -->
+                                </td>
+                                <td>
+                                    <!-- <apex:outputText value="{!Dyno_Nobel_Contract__c.Optional_Reviewer_5__r.Name}" /> -->
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </apex:outputPanel>
+            </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+ </apex:form>    
+</apex:page>

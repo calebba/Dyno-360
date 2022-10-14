@@ -1,0 +1,1 @@
+<apex:page controller="RealizationReport" contentType="text/csv#export.csv">{!ExportResult}</apex:page>

@@ -1,0 +1,69 @@
+<apex:page standardController="Account" showHeader="true" docType="html-4.01-strict">
+<div id="tabstrip" style="display:none;"> <ul> 
+<li class="k-state-active">Pipeline Totals</li>
+<li>Existing Dyno Business</li>
+<li>Dyno Opportunities</li>
+<li>Competitive Business</li>
+<li>Resource CAPEX</li>
+<li>History</li>
+</ul>
+<!-- Pipeline Totals -->
+<div style="overflow:hidden;"> 
+<CRMC_PP:Grid ObjectName="Pipeline_Total__c" FKName="Account__c" FKValue="{!Account.Id}"  DelayLoad="false"  ViewID="a230c000000G8OCAA0" 
+ EnableNewButton="true"  EnableNewInline="true"  EnableEdit="true"  EnableActions="true"  EnableFieldChooser="true" 
+ EnableStickyViews="true"  EnableToolbar="true"  EnableViews="true"  EnableFormatting="true"  EnableReadingPane="true" />
+ <CRMC_PP:DrillUp /> 
+ </div>
+
+<!-- Existing Dyno Business -->
+<div style="overflow:hidden;"> 
+<CRMC_PP:Grid ObjectName="Dyno_Opportunity__c" FKName="Account__c" FKValue="{!Account.Id}"  DelayLoad="false"  ViewID="a230c000000G8OFAA0" 
+ EnableNewButton="true"  EnableNewInline="true"  EnableEdit="true"  EnableActions="true"  EnableFieldChooser="true" 
+ EnableStickyViews="true"  EnableToolbar="true"  EnableViews="true"  EnableFormatting="true"  EnableReadingPane="true" />
+ <CRMC_PP:DrillUp /> 
+ </div>
+
+<!-- Dyno Opportunities -->
+<div style="overflow:hidden;"> 
+<CRMC_PP:Grid ObjectName="Dyno_Opportunity__c" FKName="Account__c" FKValue="{!Account.Id}"  DelayLoad="false"  ViewID="a230c000000G8OHAA0" 
+ EnableNewButton="true"  EnableNewInline="true"  EnableEdit="true"  EnableActions="true"  EnableFieldChooser="true" 
+ EnableStickyViews="true"  EnableToolbar="true"  EnableViews="true"  EnableFormatting="true"  EnableReadingPane="true" />
+ <CRMC_PP:DrillUp /> 
+ </div>
+
+<!-- Competitive Business -->
+<div style="overflow:hidden;"> 
+<CRMC_PP:Grid ObjectName="Dyno_Opportunity__c" FKName="Account__c" FKValue="{!Account.Id}"  DelayLoad="false"  ViewID="a210R0000002pHeQAI" 
+ EnableNewButton="true"  EnableNewInline="true"  EnableEdit="true"  EnableActions="true"  EnableFieldChooser="true" 
+ EnableStickyViews="true"  EnableToolbar="true"  EnableViews="true"  EnableFormatting="true"  EnableReadingPane="true" />
+ <CRMC_PP:DrillUp /> 
+ </div>
+ 
+ <!-- Resource Capex -->
+<div style="overflow:hidden;"> 
+<CRMC_PP:Grid ObjectName="Dyno_Opportunity__c" FKName="Account__c" FKValue="{!Account.Id}"  DelayLoad="false"  ViewID="a230c000000G8OGAA0" 
+ EnableNewButton="true"  EnableNewInline="true"  EnableEdit="true"  EnableActions="true"  EnableFieldChooser="true" 
+ EnableStickyViews="true"  EnableToolbar="true"  EnableViews="true"  EnableFormatting="true"  EnableReadingPane="true" />
+ <CRMC_PP:DrillUp /> 
+ </div>
+ 
+ <!-- Dyno Comments -->
+<div style="overflow:hidden;"> 
+<CRMC_PP:Grid ObjectName="Dyno_Comment__c" FKName="Account__c" FKValue="{!Account.Id}"  DelayLoad="false"  ViewID="a230c000000G8OEAA0" 
+ EnableNewButton="true"  EnableNewInline="true"  EnableEdit="true"  EnableActions="true"  EnableFieldChooser="true" 
+ EnableStickyViews="true"  EnableToolbar="true"  EnableViews="true"  EnableFormatting="true"  EnableReadingPane="true" />
+ <CRMC_PP:DrillUp /> 
+ </div>
+
+</div>
+<script>
+$(document).ready(function() {
+    $("#tabstrip").kendoTabStrip({
+      activate: function(e){
+        setTimeout(function(){          $(window).resize();        });
+      }
+    });
+    $("#tabstrip").css("display", "block");
+});
+ </script>
+</apex:page>

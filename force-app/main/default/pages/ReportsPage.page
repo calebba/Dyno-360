@@ -1,0 +1,12 @@
+<apex:page >
+    <apex:sectionHeader title="{!$Label.RP_Custom}" />
+    <apex:pageBlock title="{!$Label.RP_Available}" mode="maindetail">
+        <apex:pageBlockSection columns="1">
+            <apex:outputLink value="/apex/CustomerSearchPage">{!$ObjectType.Pricing_Rule__c.fields.Account__c.label}&nbsp;{!$Label.PricingRuleSearchButtonSearch}</apex:outputLink>
+            <apex:outputLink value="/apex/RealizationReport">{!$Label.RealizationReport}</apex:outputLink>
+            <apex:outputLink value="/apex/RatioAnalysisAndSuggestedActionsPage">{!$Label.RA_Title}&nbsp;&amp;&nbsp;{!$Label.SA_Title}</apex:outputLink>
+            <apex:outputLink value="/apex/EBITReporting">{!$Label.EBIT_Reporting}</apex:outputLink>
+            <apex:outputLink value="/apex/PandLGenerator">P&amp;L Generator</apex:outputLink>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:page>

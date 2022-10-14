@@ -1,0 +1,225 @@
+<apex:component controller="QuoteOutputController" access="global" language="{!currentLanguage}"  >
+<apex:stylesheet value="{!URLFOR($Resource.Assets, 'assets/css/QuoteOutputPDF.css')}" />
+ <apex:attribute name="componentQuoteId" description="This is the value for the component." type="Id" assignTo="{!componentQuoteId}"/>
+
+    <!-- NEEDS TO INCLUDE TERMS AND CONDITIONS AS FIRST PAGE 
+    <apex:pageBlock rendered="{!isNew}">T&C HERE</apex:pageBlock> -->
+    
+    <!-- START HEADER -->
+
+    <div class="header">
+        <table class="typeOne">
+            <tr>
+                <td align="center" colspan="3" class="typeOne" background="{!$Resource.DraftImage}">
+                    <div class="typeTwo">{!$Label.QuotePDF_Draft}</div>
+                    <!-- <div class="typeOne">{!$Label.QuotePDF_Proposal}</div> -->
+                    <div class="typeTwo">{!topName}</div>
+                    <div class="typeThree">{!bottomName}</div>
+                    <div class="typeThree">{!trialAccount}</div>
+                    <div class="typeFour">{!shippingStreet}</div>
+                    <div class="typeFive">{!shippingCity}{!IF(NOT(ISNULL(shippingState)),',','')} {!shippingState} {!shippingZip}</div>
+                    <div class="typeSix"></div>
+                </td>
+                <td align="right" colspan="1" class="typeTwo">
+                    <!-- <apex:image url="{!URLFOR($Resource.Assets, 'assets/img/Dynologo.jpg')}" />  -->
+                    <apex:outputpanel rendered="{!theQuote.Scenario_Output_Header_Info__c != ''}" >
+                    	<apex:image value="{!$Resource.dnlogo}"/>
+                    	<div align="center" style="font-size:65%;padding-top:15px;">
+                    		<apex:outputtext value="{!theQuote.Scenario_Output_Header_Info__c}" escape="false" >
+                    		</apex:outputtext>
+                    	</div>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!theQuote.Scenario_Output_Header_Info__c == ''}" >
+                    	<apex:image value="{!$Resource.dnlogo}"/>
+                    	<div align="center" style="font-size:65%;padding-top:15px;">{!theQuote.Opportunity__r.Owner.Name}</div>
+                    	<div align="center" style="font-size:65%;">{!theQuote.Opportunity__r.Owner.Phone}</div>
+                    	<div align="center" style="font-size:65%;">{!theQuote.Sales_Organization_Primary__r.Name}</div>
+                    	<div align="center" style="font-size:65%;">{!theQuote.Sales_Organization_Primary__r.Street_Address__c}</div>
+                    	<div align="center" style="font-size:65%;">{!theQuote.Sales_Organization_Primary__r.City__c}{!IF(OR(ISBLANK(theQuote.Sales_Organization_Primary__r.City__c), ISNULL(theQuote.Sales_Organization_Primary__r.City__c), ISBLANK(theQuote.Sales_Organization_Primary__r.State__c), ISNULL(theQuote.Sales_Organization_Primary__r.State__c)), '', ',')}&nbsp;{!theQuote.Sales_Organization_Primary__r.State__c}&nbsp;{!theQuote.Sales_Organization_Primary__r.Postal_Code__c}</div>
+                    	<div align="center" style="font-size:65%;"></div>  
+                    </apex:outputpanel>
+                    <div class="typeEight">{!$Label.QuotePDF_Site}</div>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" width="20%" class="typeThree">
+                    <div>{!$Label.QuotePDF_PropNum}</div>
+                    <div class="typeNine">{!theQuote.Name}</div>
+                    <br />
+                    <div>{!$Label.QuotePDF_PrintDate}</div>
+                    <div class="typeNine">{!currentDate}</div>
+                </td>
+                <td align="center" width="40%" class="typeThree">
+                    <apex:outputPanel rendered="{!AND(NOT(theQuote.Sales_Organization_Primary__r.Company_Code__c = '132'),NOT(theQuote.Sales_Organization_Primary__r.Company_Code__c = '133'),NOT(theQuote.Sales_Organization_Primary__r.Company_Code__c = '135'),NOT(theQuote.Sales_Organization_Primary__r.Company_Code__c = '136'),NOT(theQuote.Sales_Organization_Primary__r.Company_Code__c = '137'),NOT(theQuote.Sales_Organization_Primary__r.Company_Code__c = '150'))}">
+                     <div>{!$Label.QuotePDF_EffectiveDate}</div>
+                        <div class="typeNine">{!validDate}</div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!OR(theQuote.Sales_Organization_Primary__r.Company_Code__c = '132',theQuote.Sales_Organization_Primary__r.Company_Code__c = '133',theQuote.Sales_Organization_Primary__r.Company_Code__c = '135',theQuote.Sales_Organization_Primary__r.Company_Code__c = '136',theQuote.Sales_Organization_Primary__r.Company_Code__c = '137',theQuote.Sales_Organization_Primary__r.Company_Code__c = '150')}">
+                      <div>{!$Label.Scenario_Output_PVF}:&nbsp;</div>
+                        <div class="typeNine">{!validDate}</div>
+                        <div>{!$Label.Scenario_Output_To}</div>
+                        <div class="typeNine">{!validDateTo}</div>
+                    </apex:outputPanel>
+                    <br />
+                    <apex:outputpanel rendered="{!HasLockedDates}">
+			    		{!$Label.QuotePDF_Lock_Desc} {!lockDateTo}
+			    	</apex:outputpanel>
+                </td>
+                
+                <td align="center" width="20%" class="typeThree" style="vertical-align:middle;">
+                    <div>{!$Label.QuotePDF_SubjectToChange} 30 {!$Label.QuotePDF_DayNotice}</div>
+                </td>
+                <td align="center" width="20%" class="typeThree" style="vertical-align:middle;">
+                    <div>{!$Label.QuotePDF_PricesIn}</div>
+                    <div class="typeNine">{!theQuote.CurrencyIsoCode}</div>
+                </td>
+            </tr>   
+        </table>
+        
+        <apex:outputPanel style="font-size:90%;"><center><apex:outputText value="{!$Label.QuotePDF_CreditCheck}.  " rendered="{!isNew}"/><apex:outputText value="{!$Label.QuotePDF_Note} 30 {!$Label.QuotePDF_Days}" rendered="{!theQuote.Print_text_on_AN_and_AN_Based_30_day_p__c=False}"/></center></apex:outputPanel>
+        <center><b>{!LEFT(theQuote.Quote_Description__c,60)}{!IF(LEN(theQuote.Quote_Description__c) > 60, '...','')}</b></center>
+    </div>
+    <!-- END HEADER -->
+
+    <!-- START FOOTER -->
+    <div class="footer">
+        <apex:image url="{!URLFOR($Resource.Assets, 'assets/img/GroundbreakingPerformance.png')}" width="100%" styleClass="padded"/>
+        <table class="typeTwo" cellpadding="0">
+            <tr>
+                <td class="typeFour"> 
+                    <apex:outputPanel rendered="{!NOT(theQuote.CurrencyIsoCode = 'CAD')&&NOT(theQuote.Opportunity__r.Account.Language__c = 'FR')}">
+                        {!$Label.QuotePDF_FooterA}<a href="http://www.dynonobel.com/terms"> http://www.dynonobel.com/terms </a>{!$Label.QuotePDF_FooterB}
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(theQuote.CurrencyIsoCode = 'CAD')&&(theQuote.Opportunity__r.Account.Language__c = 'FR')}">
+                        {!$Label.QuotePDF_FooterA}<a href="http://www.dynonobel.com/canada/terms"> http://www.dynonobel.com/canada/terms </a>{!$Label.QuotePDF_FooterB}
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!theQuote.CurrencyIsoCode = 'CAD'&&NOT(theQuote.Opportunity__r.Account.Language__c = 'FR')}">
+                        {!$Label.QuotePDF_Footer_CANADA_A}<a href="http://www.dynonobel.com/terms"> http://www.dynonobel.com/terms </a>{!$Label.QuotePDF_Footer_CANADA_B}
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!theQuote.CurrencyIsoCode = 'CAD'&&theQuote.Opportunity__r.Account.Language__c = 'FR'}">
+                        {!$Label.QuotePDF_Footer_CANADA_A}<a href="http://www.dynonobel.com/canada/terms"> http://www.dynonobel.com/canada/terms </a>{!$Label.QuotePDF_Footer_CANADA_B}
+                    </apex:outputPanel>
+                </td>
+            </tr>
+        </table> 
+        <div class="typeTen">{!$Label.QuotePDF_Thanks}</div>
+        <div style="font-size:85%;display:inline;float:right;">{!$Label.QuotePDF_Page} <span class="pagenumber"/> {!$Label.QuotePDF_Of} <span class="pagecount"/></div>
+
+    </div> 
+    <!-- END FOOTER -->
+    
+    <!-- START CONTENT 
+    <apex:outputPanel rendered="{!OR(theQuote.Sales_Organization_Primary__r.Company_Code__c = '132',theQuote.Sales_Organization_Primary__r.Company_Code__c = '133',theQuote.Sales_Organization_Primary__r.Company_Code__c = '135',theQuote.Sales_Organization_Primary__r.Company_Code__c = '136',theQuote.Sales_Organization_Primary__r.Company_Code__c = '137',theQuote.Sales_Organization_Primary__r.Company_Code__c = '150')}">
+    <br />
+    </apex:outputPanel>-->
+    
+    <apex:outputPanel rendered="{!volumetricDeal}" title="{!$Label.QuotePDF_BP}">
+        <B> {!$Label.QuotePDF_BP} </B>
+        <table class="typeThree">
+            <tr>
+                <td width="50%">
+                    <i><b><apex:outputLabel value="{!$Label.Description}" styleClass="keepInline" /></b></i>
+                </td>
+                <td width="25%" align="right">
+                    <i><b><apex:outputLabel value="{!$Label.QuotePDF_Price}" styleClass="keepInline" /></b></i>
+                </td>
+                <td width="25%" align="right">
+                    <i><b><apex:outputLabel value="{!$Label.QuotePDF_Per}" styleClass="keepInline" /></b></i>     
+                </td>
+            </tr>
+        </table>        
+        <table class="typeFour">
+            
+            <tr>
+                <td width="50%">
+                    <apex:outputLabel value="{!theQuote.Volumetric_Parent_Product__r.Name}" styleClass="keepInline" />
+                </td>
+                <td width="25%" align="right">
+                    <c:AdjustCurrencyComponent ConversionValue="{!theQuote.Calculated_Price__c}" />
+                </td>
+                <td width="25%" align="right">
+                    <apex:outputLabel value="{!IF(NOT(theQuote.Volumetric_Per__c = '1'), theQuote.Volumetric_Per__c, '')} {!theQuote.Volumetric_Parent_Product_UoM__c}" styleClass="keepInline" />
+                </td>
+            </tr>
+          
+        </table>
+    </apex:outputPanel>
+ 
+    <apex:repeat value="{!items}" var="item" rendered="{!NOT(volumetricDeal)}">
+        <table class="typeThree">
+            <tr>
+                <td width="71%">
+                    <i><b><apex:outputLabel value="{!IF(item.grouping='X1', $Label.PL030_OR_PL065, IF(item.grouping='X2', $Label.PL030_OR_PL065_2, IF(item.grouping='X3', $Label.PL030_OR_PL065_3, item.grouping)))}" styleClass="keepInline" /></b></i>
+                </td>
+                <td width="14.5%" align="right">
+                    <i><b><apex:outputLabel value="{!$Label.QuotePDF_Price}" styleClass="keepInline" /></b></i>
+                </td>
+                <td width="14.5%" align="right">
+                    <i><b><apex:outputLabel value="{!$Label.QuotePDF_Per}" styleClass="keepInline" /></b></i>     
+                </td>
+            </tr>
+        </table>        
+        <table class="typeFour">
+            <apex:repeat value="{!item.groupedQlis}" var="line">
+                <tr style="font-size:85%;">
+                    <td width="21%">
+                        <apex:outputLabel value="{!line.Material_Item__r.Material_Code__c}" styleClass="keepInline" />
+                    </td>
+                    <td width="50%">
+                        <apex:outputLabel value="{!line.Material_Item__r.Material_Description__c}" styleClass="keepInline" rendered="{!theQuote.Opportunity__r.Account.Language__c != 'FR'}"/>
+                    	<apex:outputLabel value="{!line.Material_Item__r.Material_Description_French__c}" styleClass="keepInline" rendered="{!theQuote.Opportunity__r.Account.Language__c = 'FR'}"/>
+                    </td>
+                    <td width="14.5%" align="right">
+                      <c:AdjustCurrencyComponent ConversionValue="{!line.Actual_Price__c}" />
+                      <apex:outputPanel rendered="{!line.Lock_Expiration_Date__c}" style="margin-right:-10px;">
+                      	*
+                      </apex:outputPanel>
+                    </td>
+                    <td width="14.5%" align="right">
+                        <apex:outputLabel value="{!IF(line.Per__c = 1, '' ,TEXT(ROUND(line.Per__c,0)))} {!line.UoM__c}" styleClass="keepInline" />
+                    </td>
+                </tr>
+            </apex:repeat>
+        </table>
+        <br />
+    </apex:repeat>
+    
+     <apex:outputPanel rendered="{!NOT(ISNULL(bundledList))}" title="{!$Label.Services_Included_QOP}">
+        <B>{!$Label.Services_Included_QOP} </B>
+        <table class="typeThree">
+            <tr>
+                <td width="20.7%">
+                    <i><b><apex:outputLabel value="{!$Label.Material_Code}" styleClass="keepInline" /></b></i>
+                </td>
+                <td width="80.65%">
+                    <i><b><apex:outputLabel value="{!$Label.Description}" styleClass="keepInline" /></b></i>
+                </td>
+            </tr>
+        </table>        
+        <table class="typeFour">
+            <apex:repeat value="{!bundledList}" var="line">
+                <tr style="font-size:80%;">
+                    <td width="20%">
+                        <apex:outputLabel value="{!line.Material_Item__r.Material_Code__c}" styleClass="keepInline" />
+                    </td>
+                    <td width="80%">
+                        <apex:outputLabel value="{!line.Material_Item__r.Material_Description__c}" styleClass="keepInline" rendered="{!theQuote.Opportunity__r.Account.Language__c != 'FR'}"/>
+                        <apex:outputLabel value="{!line.Material_Item__r.Material_Description_French__c}" styleClass="keepInline" rendered="{!theQuote.Opportunity__r.Account.Language__c = 'FR'}"/>
+                    </td>
+
+               
+                </tr>
+            </apex:repeat>
+        </table>
+    </apex:outputPanel>  
+    
+    <apex:outputPanel rendered="{!AND(NOT(ISBLANK(theQuote.Scenario_Notes__c)), NOT(ISNULL(theQuote.Scenario_Notes__c)), LEN(theQuote.Scenario_Notes__c) > 200)}">
+        <div style="page-break-after:always;"></div>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!AND(NOT(ISBLANK(theQuote.Scenario_Notes__c)), NOT(ISNULL(theQuote.Scenario_Notes__c)), LEN(theQuote.Scenario_Notes__c) <= 200)}">
+        <br /><br />
+    </apex:outputPanel>
+
+    <apex:outputText value="{!theQuote.Scenario_Notes__c}" escape="false" />
+    <!-- END CONTENT -->
+</apex:component>

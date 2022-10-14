@@ -1,0 +1,1061 @@
+<apex:page controller="SalesPipelineScatterController">
+<apex:slds >
+ <body> 
+    
+    <select id="mySelect" style="float:left;" onchange="showChart()"><br/>
+    <br/><br/>
+                    <option value="All Pipeline Accounts">All Pipeline Accounts</option>
+                    <option value="Best Targets">Best Targets</option>
+                    <option value="Desirable with Low Investment">Desirable with Low Investment</option>
+                    <option value="Highly Desirable with High Investment">Highly Desirable with High Investment</option>
+                    <option value="Worst Targets">Worst Targets</option>
+                    <br/><br/> <br/><br/>
+          <!-- <div id="container" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto;"></div>-->                           
+    </select> 
+    
+    <br/><br/> 
+          <div id="container" style="width:325px; height: 240px; margin: 0 left;"></div>
+          
+          <apex:image url="{!$Resource.ScatterChartLegend}" width="150" height="50" style="float:left;"/>
+          <br/><br/><br/><br/>          
+          <div id="demo"></div>
+          <div id="targetCrossSellOrderItemDetails"></div>  
+  </body>
+    
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            
+            <script type="text/javascript" src="https://code.highcharts.com/modules/heatmap.js"></script>
+            <script type="text/javascript" src="https://code.highcharts.com/modules/treemap.js"></script>
+            <script src="https://code.highcharts.com/maps/modules/map.js"></script>
+
+            <script src="https://www.highcharts.com/media/com_demo/js/highslide-full.min.js"></script>
+            <script src="https://www.highcharts.com/media/com_demo/js/highslide.config.js" charset="utf-8"></script>
+            <link rel="stylesheet" type="text/css" href="https://www.highcharts.com/media/com_demo/css/highslide.css" />
+
+            <!-- <script src="https://rawgithub.com/RolandBanguiran/highstock-yaxis-panning/master/yaxis-panning.js"></script> -->
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"/>
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+
+            <style>
+                h2 {font-size: 100% !important; font-weight:bold !important;}
+                .menuButtonButton {font-size: 100% !important;}
+            </style>
+
+    
+        <script type="text/javascript">
+            // ------------------------------ SCATTER CHART ----------------------------
+      var data = [];
+      var accountData = [];
+      var updating = false;
+      var accountDetails = [{}];
+      $(document).ready(function() {
+
+        var data = [{}];
+        SalesPipelineScatterController.fetchAccountDetails(
+        function(result, event) {
+            if (event.status && result.length > 0) {
+                console.log('-------------->>> ', result);
+                data = result;
+                accountDetails = result;
+                buildTable(data);
+                displayChart(data,'All Pipeline Accounts');
+            }
+        });
+
+
+
+
+        
+
+      });
+
+
+      var displayChart = function(data,type) {
+        var startpoint_x = 6;
+        var endpoint_x = 10;
+        
+        var startpoint_y = 0;
+        var endpoint_y = 3;
+          
+        if(type.indexOf('All Pipeline Accounts') === 0) {
+          console.log('0000000000');
+          startpoint_x = 0;
+          
+        }
+        
+        if(type.indexOf('Best Targets') === 0) {
+          startpoint_x = 8;
+          endpoint_x = 10;
+          startpoint_y = 0;
+          endpoint_y = 1.5;
+        }
+          
+        if(type.indexOf('Desirable with Low Investment') === 0) {
+          startpoint_x = 0;
+          endpoint_x = 8;
+          startpoint_y = 0;    
+          endpoint_y = 1.5;
+        }
+          
+        if(type.indexOf('Highly Desirable with High Investment') === 0) {
+          startpoint_x = 8;
+          endpoint_x = 10;
+          startpoint_y = 1.5;
+          endpoint_y = 3;
+        }
+          
+        if(type.indexOf('Worst Targets') === 0) {
+          startpoint_x = 0;
+          endpoint_x = 8;
+          startpoint_y = 1.5;
+          endpoint_y = 3;
+        } 
+          
+          
+        console.log('******** ', type);
+        console.log('.... ', startpoint_x);
+        console.log('======---------->>> ', data);
+        data = JSON.parse(JSON.stringify(data).split('"Score_x":').join('"x":'));
+        data = JSON.parse(JSON.stringify(data).split('"Score_y":').join('"y":'));
+
+        var chart = new Highcharts.Chart({
+          chart: {
+                renderTo: 'container',
+                defaultSeriesType:'scatter',
+                borderWidth:1,
+                borderColor:'#b3d7ff',
+                marginLeft:70,
+                marginRight:50,
+                backgroundColor:'#e6f2ff',
+                plotBackgroundColor:'#fff',
+                // zoomType : 'xy',
+                panning: false,
+                // panKey: 'shift',
+          },
+          mapNavigation: {
+              enabled: false,
+              enableButtons: false
+          },
+          credits:{enabled:false},
+          title:{
+              text:'National Pipeline Output:  Desirability vs Barriers'
+          },
+          subtitle:{
+              text:''
+              },
+          legend:{
+              enabled:false
+          },
+          tooltip: {
+              formatter: function() {
+
+                return '<b>'+ this.point.FIELD1 +'</b><br/>'+
+                    this.x +' : '+ this.y;
+              }
+          },
+          plotOptions: {
+              series: {
+                  shadow:true,
+                  followPointer:false,
+
+                //   point: {
+                //     events: {
+                //         click: function (e) {
+                //             //console.log(this);
+                //             hs.htmlExpand(null, {
+                //                 pageOrigin: {
+                //                     x: e.pageX || e.clientX,
+                //                     y: e.pageY || e.clientY
+                //                 },
+                //                 headingText: this.FIELD1,
+                //                 maincontentText: 'Score x axis: ' + this.x + '</br>' + 'Score y axis: ' + this.y,
+                //                 width: 100
+                //             });
+                //         }
+                //     }
+                // }
+
+                point:{
+                    events:{
+                        click: function(){
+
+                            var e = (!this.dataLabels) || this.dataLabels.enabled ? false : true;
+                            if(this.dataLabels == null) {
+                              e = true;
+                            }
+                            this.update({
+                                dataLabels:{
+                                    enabled: e,
+                                    format: '{point.FIELD1} <br/> {x} : {y}'
+                                }
+                            });
+                        }
+                    }
+                }
+
+              },
+              followPointer:false
+          },
+          subtitle: {
+           text: document.ontouchstart === undefined ?
+               '' :
+               ''
+       },
+          xAxis:{
+              title:{
+                  text:'Account Desirability'
+                  },
+              min:startpoint_x,
+              max:endpoint_x,
+              maxZoom: 0.5,
+              tickInterval:0.5,
+              tickLength:0,
+              minorTickLength:0,
+              gridLineWidth:1,
+              gridLineColor : 'grey',
+              showLastLabel:true,
+              showFirstLabel:false,
+              lineColor:'black',
+              lineWidth:1,
+              type: 'number',
+              events: {
+
+                redraw: function () {
+
+                  console.log('REDRAW');
+                  var width = this.plotBox.width / 2.0;
+                  var height = this.plotBox.height / 2.0 + 1;
+                  this.renderer.rect(this.plotBox.x,
+                                      this.plotBox.y, width, height, 1)
+
+                      .attr({
+                          fill: 'Red',
+                          zIndex: 0
+                      })
+
+                      .add();
+
+                },
+
+                  afterSetExtremes: function (event) {
+                      console.log('SET EXTREME', this);
+
+                      // var width = this.width / 0.0;
+                      // var height = this.height / 0.0 + 0;
+                      // this.chart.renderer.rect(width+(width/0),height, width, height, 0)
+                      //
+                      //     .attr({
+                      //         fill: 'White',
+                      //         zIndex: 0
+                      //     })
+                      //
+                      //     .add();
+
+
+                      var index = document.getElementById('container').dataset.highchartsChart;
+                      var chartPartner = Highcharts.charts[index];
+                      if (!updating) {
+                          updating = true;
+                          chartPartner.xAxis[0].setExtremes(event.min, event.max);
+                          
+                      } else {
+                          updating = false;
+                      }
+                  }
+              },
+              minRange: 1
+          },
+
+          yAxis:{
+              title:{
+                  text:'Barriers to Pursue Business',
+                  rotation:-90,
+                  margin:5,
+              },
+              min:startpoint_y,
+              max:endpoint_y,
+              maxZoom: 0.5,
+              tickInterval:0.5,
+              tickLength:0,
+              gridLineColor : 'grey',
+              minorTickLength:0,
+              lineColor:'black',
+              lineWidth:1
+          },
+          series: [{
+              color:'#185aa9',
+              pointInterval: 0.5,
+              pointStart: 6,
+              data: data
+
+          }]
+        }, function(chart) { // on complete
+
+            var width = chart.plotBox.width / 2.0;
+            var height = chart.plotBox.height / 2.0 + 1;
+              
+            //Calculate the quadrant coordinates; toPixels uses point values
+            var x0 = chart.xAxis[0].toPixels(0, false);
+            var x1 = chart.xAxis[0].toPixels(8, false);
+            var x2 = chart.xAxis[0].toPixels(10, false);
+            
+            //The y axis coordinates return values from TOP LEFT origin (opposite order)
+            var y0 = chart.yAxis[0].toPixels(3, false);
+            var y1 = chart.yAxis[0].toPixels(1.5, false);
+            var y2 = chart.yAxis[0].toPixels(0, false);
+            
+            if(type.indexOf('Accounts of Interest') === 0) {
+            // red quadrant
+           chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, width, height, 1)
+
+                  .attr({
+                      fill: '#ff9e9e',
+                      zIndex: 0
+                  })
+
+                  .add();
+            // orange quadrant
+           chart.renderer.rect(chart.plotBox.x + width,
+                                  chart.plotBox.y, width, height, 1)
+                  .attr({
+                      fill: '#ffe79e',
+                      zIndex: 0
+
+                  })
+                  .add();
+          // yellow quadrant
+          chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y + height, width, height, 1)
+                  .attr({
+                      fill: '#f8cdb0',
+                      zIndex: 0
+                  })
+                  .add();
+            // green quadrant
+          chart.renderer.rect(chart.plotBox.x + width,
+                                  chart.plotBox.y + height, width, height, 1)
+                  .attr({
+                      fill: '#bdcfb2',
+                      zIndex: 0
+                  })
+                  .add();
+
+           }
+            
+           if(type.indexOf('All Pipeline Accounts') === 0) {
+                // red quadrant
+           chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, chart.plotBox.width * 0.8, height, 1)
+
+                  .attr({
+                      fill: '#ff9e9e',
+                      zIndex: 0
+                  })
+
+                  .add();
+            // orange quadrant
+           chart.renderer.rect(chart.plotBox.x + chart.plotBox.width * 0.8,
+                                  chart.plotBox.y, chart.plotBox.width * 0.2, height, 1)
+                  .attr({
+                      fill: '#ffe79e',
+                      zIndex: 0
+
+                  })
+                  .add();
+            // yellow quadrant
+          chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y + height, chart.plotBox.width * 0.8, height, 1)
+                  .attr({
+                      fill: '#f8cdb0',
+                      zIndex: 0
+                  })
+                  .add();
+            // green quadrant
+          chart.renderer.rect(chart.plotBox.x + chart.plotBox.width * 0.8,
+                                  chart.plotBox.y + height, chart.plotBox.width * 0.2, height, 1)
+                  .attr({
+                      fill: '#bdcfb2',
+                      zIndex: 0
+                  })
+                  .add();
+               
+               
+           
+           }
+            
+            
+           if(type.indexOf('Best Targets') === 0)  {
+                // Green quadrant
+               chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, chart.plotBox.width, chart.plotBox.height, 1)
+
+                  .attr({
+                      fill: '#bdcfb2',
+                      zIndex: 0
+                  })
+
+                  .add();
+           }
+            
+           if(type.indexOf('Desirable with Low Investment') === 0) {
+                // Yellow quadrant
+               chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, chart.plotBox.width, chart.plotBox.height, 1)
+
+                  .attr({
+                      fill: '#f8cdb0',
+                      zIndex: 0
+                  })
+
+                  .add();
+           }
+            
+           if(type.indexOf('Highly Desirable with High Investment') === 0) {
+                // Orange quadrant
+               chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, chart.plotBox.width, chart.plotBox.height, 1)
+
+                  .attr({
+                      fill: '#ffe79e',
+                      zIndex: 0
+                  })
+
+                  .add();
+           }
+           
+            
+           if(type.indexOf('Worst Targets') === 0) {
+               // Red quadrant
+               chart.renderer.rect(chart.plotBox.x,
+                                  chart.plotBox.y, chart.plotBox.width, chart.plotBox.height, 1)
+
+                  .attr({
+                      fill: '#ff9e9e',
+                      zIndex: 0
+                  })
+
+                  .add();
+           }
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+        });
+
+        $("input").click( function() {
+          console.log('HHHHHHHHHHHHHHHH');
+          console.log(chart.xAxis[0]);
+         chart.xAxis[0].setExtremes(8,10);
+        });
+
+      }
+
+      // js render to build Table dynamically
+      var buildTable = function(state) {
+          console.log('...Inside buildTable' , state);
+
+          var templateId = 'crossSellOrderItemDetails';
+          var targetId = 'targetCrossSellOrderItemDetails';
+
+          var template = $("#" + templateId).html();
+          $("#" + targetId).html(
+              _.template(
+                  template
+                  ,{
+                      items: state
+                  }
+              )
+          );
+      }
+
+      var getData = function() {
+        var data = [
+                {
+                 "FIELD1": "Cliffs Natural Resources",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "8",
+                 "Segment Priority": "8",
+                 "Probability of Success": "8",
+                 "Competitive Reaction": "8",
+                 "Score_x": 9.2,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 1
+                },
+                {
+                 "FIELD1": "Newmont Mining",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "4",
+                 "Competitive Reaction": "4",
+                 "Score_x": 8.5,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "2",
+                 "People": "2",
+                 "Score_y": 0.8,
+                 "FIELD17": "",
+                 "Quadrant": 1
+                },
+                {
+                 "FIELD1": "Peabody",
+                 "FIELD2": "Coal",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "4",
+                 "Probability of Success": "8",
+                 "Competitive Reaction": "2",
+                 "Score_x": 8.2,
+                 "FIELD11": "",
+                 "Resources": " ",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "2",
+                 "Score_y": 0.2,
+                 "FIELD17": "",
+                 "Quadrant": 1
+                },
+                {
+                 "FIELD1": "Goldcorp",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "2",
+                 "Competitive Reaction": "2",
+                 "Score_x": 8.2,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "2",
+                 "People": "2",
+                 "Score_y": 0.8,
+                 "FIELD17": "",
+                 "Quadrant": 1
+                },
+                {
+                 "FIELD1": "Martin Marietta",
+                 "FIELD2": "Stone",
+                 "AN": "6",
+                 "IS": "10",
+                 "Margin": "8",
+                 "Ability to Diff": "8",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "10",
+                 "Score_x": 8.1,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "1",
+                 "People": "1",
+                 "Score_y": 0.4,
+                 "FIELD17": "",
+                 "Quadrant": 1
+                },
+                {
+                 "FIELD1": "Kinross Gold",
+                 "FIELD2": "Metals",
+                 "AN": "8",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "4",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "2",
+                 "Score_x": 8,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "2",
+                 "People": "1",
+                 "Score_y": 0.7,
+                 "FIELD17": "",
+                 "Quadrant": 1
+                },
+                {
+                 "FIELD1": "Cloud Peak Energy",
+                 "FIELD2": "Coal",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "4",
+                 "Probability of Success": "4",
+                 "Competitive Reaction": "2",
+                 "Score_x": 7.8,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Arch",
+                 "FIELD2": "Coal",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "4",
+                 "Probability of Success": "4",
+                 "Competitive Reaction": "2",
+                 "Score_x": 7.8,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "3",
+                 "People": "3",
+                 "Score_y": 1.2,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Vale",
+                 "FIELD2": "Metals",
+                 "AN": "4",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "4",
+                 "Score_x": 7.8,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "2",
+                 "People": "2",
+                 "Score_y": 0.8,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Vulcan",
+                 "FIELD2": "Stone",
+                 "AN": "6",
+                 "IS": "10",
+                 "Margin": "8",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "8",
+                 "Competitive Reaction": "6",
+                 "Score_x": 7.8,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "1",
+                 "People": "1",
+                 "Score_y": 0.4,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Contura Energy",
+                 "FIELD2": "Coal",
+                 "AN": "8",
+                 "IS": "6",
+                 "Margin": "10",
+                 "Ability to Diff": "8",
+                 "Segment Priority": "4",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "6",
+                 "Score_x": 7.6,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Kiewit ",
+                 "FIELD2": "Coal",
+                 "AN": "6",
+                 "IS": "6",
+                 "Margin": "8",
+                 "Ability to Diff": "8",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "8",
+                 "Score_x": 7.4,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Lehigh Hanson",
+                 "FIELD2": "Stone",
+                 "AN": "4",
+                 "IS": "8",
+                 "Margin": "8",
+                 "Ability to Diff": "8",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "6",
+                 "Score_x": 7.3,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "1",
+                 "People": "1",
+                 "Score_y": 0.4,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Coeur Mining",
+                 "FIELD2": "Metals",
+                 "AN": "2",
+                 "IS": "8",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "4",
+                 "Score_x": 7.2,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "1",
+                 "People": "1",
+                 "Score_y": 0.4,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Marigold",
+                 "FIELD2": "Metals",
+                 "AN": "4",
+                 "IS": "6",
+                 "Margin": "8",
+                 "Ability to Diff": "4",
+                 "Segment Priority": "10",
+                 "Probability of Success": "8",
+                 "Competitive Reaction": "8",
+                 "Score_x": 6.7,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "1",
+                 "People": "1",
+                 "Score_y": 0.4,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Simplot",
+                 "FIELD2": "Metals",
+                 "AN": "4",
+                 "IS": "6",
+                 "Margin": "6",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "8",
+                 "Score_x": 6.2,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Carmeuse",
+                 "FIELD2": "Stone",
+                 "AN": "4",
+                 "IS": "8",
+                 "Margin": "6",
+                 "Ability to Diff": "4",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "6",
+                 "Score_x": 6.1,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "K&S Salt",
+                 "FIELD2": "Salt",
+                 "AN": "2",
+                 "IS": "10",
+                 "Margin": "8",
+                 "Ability to Diff": "2",
+                 "Segment Priority": "4",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "8",
+                 "Score_x": 5.85,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "0",
+                 "Truck": "0",
+                 "People": "0",
+                 "Score_y": 0,
+                 "FIELD17": "",
+                 "Quadrant": 2
+                },
+                {
+                 "FIELD1": "Freeport",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "8",
+                 "Segment Priority": "10",
+                 "Probability of Success": "4",
+                 "Competitive Reaction": "8",
+                 "Score_x": 9,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "3",
+                 "Truck": "3",
+                 "People": "3",
+                 "Score_y": 3,
+                 "FIELD17": "",
+                 "Quadrant": 3
+                },
+                {
+                 "FIELD1": "Asarco (Groupo Mexico)",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "4",
+                 "Competitive Reaction": "8",
+                 "Score_x": 8.7,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "3",
+                 "Truck": "3",
+                 "People": "3",
+                 "Score_y": 3,
+                 "FIELD17": "",
+                 "Quadrant": 3
+                },
+                {
+                 "FIELD1": "Barrick Gold ",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "6",
+                 "Competitive Reaction": "2",
+                 "Score_x": 8.6,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "3",
+                 "Truck": "3",
+                 "People": "3",
+                 "Score_y": 3,
+                 "FIELD17": "",
+                 "Quadrant": 3
+                },
+                {
+                 "FIELD1": "Rio Tinto",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "10",
+                 "Ability to Diff": "6",
+                 "Segment Priority": "10",
+                 "Probability of Success": "4",
+                 "Competitive Reaction": "2",
+                 "Score_x": 8.4,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "3",
+                 "Truck": "3",
+                 "People": "3",
+                 "Score_y": 3,
+                 "FIELD17": "",
+                 "Quadrant": 3
+                },
+                {
+                 "FIELD1": "Arcelor Mittal",
+                 "FIELD2": "Metals",
+                 "AN": "10",
+                 "IS": "10",
+                 "Margin": "6",
+                 "Ability to Diff": "4",
+                 "Segment Priority": "10",
+                 "Probability of Success": "2",
+                 "Competitive Reaction": "2",
+                 "Score_x": 6.7,
+                 "FIELD11": "",
+                 "Resources": "",
+                 "Plant": "3",
+                 "Truck": "3",
+                 "People": "3",
+                 "Score_y": 3,
+                 "FIELD17": "",
+                 "Quadrant": 4
+                }
+            ]
+
+            return data;
+      }
+
+    // ------------------------ END OF SCATTER CHART ----------------------------
+    function showChart() {
+        var x = document.getElementById("mySelect").value;
+        console.log('=====>>> ',x);
+        console.log('=====>>> ',x.length);
+        console.log('=====>>> ',x.trim().length);
+        console.log('accountDetails =====>>> ', accountDetails);
+        displayChart(accountDetails,x);
+        //document.getElementById("demo").innerHTML = "You selected: " + x;
+    }
+    </script>
+
+
+        
+
+        <style>
+
+    </style>
+
+    <script type="text/javascript" id='crossSellOrderItemDetails'>
+
+      <table id="crossSellOrderProductsGrid" class="table table-bordered">
+        <thead>
+          <tr align="left">
+            <th style="white-space: normal; text-align: left; vertical-align: middle; "></th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;"></th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">AN</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">ISPE</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Marg</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Ability to Diff</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Seg Priority</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Prob of Success</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Comp React</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;background-color: lightgray;">Desire Score</th>
+
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Rcrs</th>
+
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Tot CapEx</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">People</th>
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;background-color: lightgray;">Barrier Score</th>
+
+            <th style="white-space: normal; text-align: left; vertical-align: middle; width:3%;">Quad</th>
+
+          </tr>
+        </thead>
+
+        <tr align="left" style="font-weight:bold">
+          <td>Customer</td>
+          <td>Industry</td>
+          <td>{!objColumnPercentage.AN__c}%</td>
+          <td>{!objColumnPercentage.IS__c}%</td>
+          <td>{!objColumnPercentage.Margin__c}%</td>
+          <td>{!objColumnPercentage.Ability_to_Diff__c}%</td>
+          <td>{!objColumnPercentage.Segment_Priority__c}%</td>
+          <td>{!objColumnPercentage.Probability_of_Success__c}%</td>
+          <td>{!objColumnPercentage.Competitive_Reaction__c}%</td>
+          <td style="background-color: lightgray;"></td>
+
+          <td ></td>
+
+          <td>{!objColumnPercentage.Total_CapEx__c}%</td>
+          <td>{!objColumnPercentage.People__c}%</td>
+          <td style="background-color: lightgray;"></td>
+
+          <td></td>
+        </tr>
+
+                <% _.each(items, function(item, key, list) { console.log(item);%>
+        <tr>
+          <td><a href="/<%= item.Id %>" target="_blank"><%= item.FIELD1 %></a></td>
+          <td align="center"><%= item.FIELD2 %></td>
+          <td align="center"><%= item.AN %></td>
+          <td align="center"><%= item.IS %></td>
+          <td align="center"><%= item.Margin %></td>
+          <td align="center"><%= item.Ability_to_Diff %></td>
+          <td align="center"><%= item.Segment_Priority %></td>
+          <td align="center"><%= item.Probability_of_Success %></td>
+          <td align="center"><%= item.Competitive_Reaction %></td>
+          <td align="center" style="background-color: lightgray;"><b><%= item.Score_x %></b></td>
+
+          <td align="center"><%= item.Resources %></td>
+
+          <td align="center"><%= item.TotalCapEx %></td>
+          <td align="center"><%= item.People %></td>
+
+          <td align="center" style="background-color: lightgray;"><b><%= item.Score_y %><b></td>
+
+
+          <% if (item.Quadrant == 1) { %>
+              <td align="center" bgcolor="#bdcfb2"><%= item.Quadrant %></td>
+          <% } %>
+
+          <% if (item.Quadrant == 2) { %>
+              <td align="center" bgcolor="#ffe79e"><%= item.Quadrant %></td>
+          <% } %>
+
+          <% if (item.Quadrant == 3) { %>
+              <td align="center" bgcolor="#f8cdb0"><%= item.Quadrant %></td>
+          <% } %>
+
+          <% if (item.Quadrant == 4) { %>
+              <td align="center" bgcolor="#ff9e9e"><%= item.Quadrant %></td>
+          <% } %>
+
+        </tr>
+        <% });%>
+
+      </table>
+
+      </script>
+
+</apex:slds>
+</apex:page>

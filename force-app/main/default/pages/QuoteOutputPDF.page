@@ -1,0 +1,4 @@
+<apex:page controller="QuoteOutputController" language="{!currentLanguage}" renderAs="PDF" showHeader="false">
+    <c:QuoteOutputPDFComponent componentQuoteId="{!quoteId}"/>
+    
+</apex:page>

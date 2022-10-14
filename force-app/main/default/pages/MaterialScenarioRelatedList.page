@@ -1,0 +1,36 @@
+<apex:page standardController="Material_Item__c" extensions="MaterialScenarioRelatedListExtension">
+	<apex:pageMessages />
+	
+	<apex:pageBlock >
+		<apex:pageBlockTable value="{!Scenarios}" var="scenario">
+			<apex:column >
+				<apex:facet name="header">{!$ObjectType.Quote__c.fields.Name.label}</apex:facet>
+				<apex:outputLink value="/{!scenario.Id}" target="_parent">{!scenario.Name}</apex:outputLink>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">{!$ObjectType.Quote__c.fields.Quote_Valid_From__c.label}</apex:facet>
+				<apex:outputField value="{!scenario.Quote_Valid_From__c}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">{!$ObjectType.Quote__c.fields.Quote_Valid_To__c.label}</apex:facet>
+				<apex:outputField value="{!scenario.Quote_Valid_To__c}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">{!$ObjectType.Quote__c.fields.Approval_Status__c.label}</apex:facet>
+				<apex:outputField value="{!scenario.Approval_Status__c}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">{!$ObjectType.Quote__c.fields.Price_Valid_From__c.label}</apex:facet>
+				<apex:outputField value="{!scenario.Quote_Valid_From__c}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">{!$ObjectType.Quote__c.fields.Price_Valid_To__c.label}</apex:facet>
+				<apex:outputField value="{!scenario.Quote_Valid_To__c}"/>
+			</apex:column>
+		</apex:pageBlockTable>
+		
+		<apex:form >
+			<apex:outputLink value="/apex/MaterialScenarioFullList?id={!Material_Item__c.Id}&full=y" target="_top" rendered="{!IF(RecordCount > 0,'true','false')}">Go to list >></apex:outputLink>
+		</apex:form>
+	</apex:pageBlock>
+</apex:page>

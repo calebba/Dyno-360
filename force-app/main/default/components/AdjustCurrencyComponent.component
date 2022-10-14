@@ -1,0 +1,6 @@
+<apex:component controller="AdjustCurrencyController">
+	<apex:attribute required="true" name="ConversionValue" description="Used to properly format currency" type="Double" assignTo="{!conversionValue}" />
+	<apex:attribute required="false" name="noDecimal" description="Quick Fix to Make The value have 0 decimal" type="String" assignTo="{!noDecimalValue}" default="Yes" /> 
+	<apex:attribute required="false" name="CurrencyType" description="Type of currency" type="String" />
+	<apex:outputText value="{!IF(OR(ISBLANK(conversionFormatted), ISNULL(conversionFormatted)),'',IF(OR(ISBLANK(CurrencyType), ISNULL(CurrencyType)),$Label.CurrencyUS & ' ',CurrencyType & ' '))}{!IF(NOT(CONTAINS(conversionFormatted, '.')), conversionFormatted & '.00', IF(AND(CONTAINS(conversionFormatted, '.'), FIND('.', conversionFormatted) == LEN(conversionFormatted)-1), conversionFormatted & '0', conversionFormatted))}" />
+</apex:component>

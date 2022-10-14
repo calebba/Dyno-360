@@ -1,0 +1,83 @@
+<apex:page standardcontroller="Account_Discount__c"  tabStyle="Account_Discount__c" extensions="AccountDiscountController" >        
+        <apex:form >
+            
+            <apex:pageBlock >
+                <apex:pageBlockButtons >
+                    <apex:commandButton value="Save" action="{!SaveAD}" /> 
+                    <apex:commandButton value="Save & New" action="{!SaveAndNew}" />
+                    <apex:commandButton value="Cancel" action="{!Cancel}" />
+                </apex:pageBlockButtons>
+                <apex:pageBlockSection title="General Information" columns="2">
+                    <apex:inputField value="{!ad.Account__c}">
+                    </apex:inputField>
+                    <apex:inputField value="{!ad.Transfer_Pricing_Account__c}">
+                    </apex:inputField>
+                </apex:pageBlockSection>
+            </apex:pageBlock>  
+            
+            <apex:pageMessages id="errors" />
+            
+            
+            <apex:outputPanel layout="block" >
+                <apex:actionRegion >
+                    <apex:pageBlock title="Material Selection" mode="edit">
+                        
+                        
+                        <apex:pageBlockSection columns="1" title="Select Below">
+                            
+                            <apex:pageBlockSectionItem >
+                                <apex:actionStatus id="phl2Status" startText="{!$Label.Advanced_Add_Add_PHL3}" stopText="{!$ObjectType.Material_Item__c.fields.PHL1__c.label}: " />
+                                <apex:selectList value="{!selectedPHL1}" size="1">
+                                    <apex:selectOptions value="{!pHL1Options}" />
+                                    <apex:actionSupport event="onchange" rerender="phl2Opts,phl3Opts,matOpts" status="phl2Status" action="{!loadPHL2Options}" />            
+                                </apex:selectList>
+                            </apex:pageBlockSectionItem>
+                                                    
+                            <apex:pageBlockSectionItem >
+                                <apex:actionStatus id="phl3Status" startText="Getting PHL3s" stopText="PHL2"/>
+                                <apex:selectList value="{!selectedPHL2}" size="1" id="phl2Opts">
+                                    <apex:selectOptions value="{!pHL2Options}"/>
+                                    <apex:actionSupport event="onchange" rerender="phl3Opts,matOpts" status="phl3Status" action="{!loadPHL3Options}" />
+                                </apex:selectList>
+                            </apex:pageBlockSectionItem>
+                                                                    
+                            <apex:pageBlockSectionItem >
+                                <apex:actionStatus id="matStatus" startText="Getting Materials" stopText="{!$ObjectType.Material_Item__c.fields.PHL3__c.label}: "/>
+                                <apex:selectList value="{!selectedPHL3}" size="1" id="phl3Opts">
+                                    <apex:selectOptions value="{!pHL3Options}" />
+                                    <apex:actionSupport event="onchange" rerender="matOpts" status="matStatus" action="{!loadMatOptions}" />
+                                </apex:selectList>
+                            </apex:pageBlockSectionItem>
+                                                    
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}: " />
+                                <apex:outputPanel id="matOpts">
+                                    <apex:selectList value="{!materialCode}" size="1" rendered="{!displayMaterialsSelectList}">
+                                        <apex:selectOptions value="{!matOptions}" />                
+                                    </apex:selectList>
+                                    <apex:inputText value="{!materialCode}" rendered="{!NOT(displayMaterialsSelectList)}"/>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>                                                                
+                        </apex:pageBlockSection>
+                        
+                    </apex:pageBlock>
+                </apex:actionRegion>
+            </apex:outputPanel>
+        
+            <apex:pageBlock >
+                <apex:pageBlockSection columns="2">
+                <apex:inputField value="{!ad.Discount_Percent__c}"></apex:inputField>
+                <apex:inputField value="{!ad.Start_Date__c}"></apex:inputField>
+                <apex:inputField value="{!ad.End_Date__c}"></apex:inputField>
+            </apex:pageBlockSection>
+            </apex:pageBlock>  
+        
+            
+            
+        </apex:form>
+        
+        
+        
+        
+        
+</apex:page>

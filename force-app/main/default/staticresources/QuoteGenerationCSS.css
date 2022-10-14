@@ -1,0 +1,323 @@
+@charset "utf-8";
+/* Dyno Quote Form CSS 
+Author: EW
+Date created: 04.20.2010
+*/
+
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-color: #fff;
+	color: #333;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+}
+
+#wrapper {
+	margin: 20px auto;
+	width: 800px;
+}
+
+.clear {
+	clear: both;
+}
+
+a {
+	color: #296DA9;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #1D4A74;
+}
+
+/* Basic Quote */
+
+#standardQuote {
+	margin: 0 0 20px 0;
+}
+
+#header {
+	background: url(images/headerBack.png) repeat-x;
+}
+
+h1 {
+	background: url(images/h1Back.png) no-repeat top left;
+	color: #fff;
+	float: left;
+	font-size: 14px;
+	padding: 7px 15px;
+}
+
+p.required {
+	background: url(images/requiredBack.png) no-repeat top right;
+	color: #fff;
+	float: right;
+	padding: 8px 15px;
+}
+
+ul.itemList li {
+	background-color: #eee;
+	display: block;
+	float: left;
+	font-weight: bold;
+	padding: 5px;
+	width: 140px;
+}
+
+p.formulaNote {
+	background-color: #eee;
+	border: solid #ccc 1px;
+	display: block;
+	padding: 5px 15px;
+}
+
+#fullForm {
+	border-left: solid #ccc 1px;
+	border-right: solid #ccc 1px;
+	padding: 15px 0px 15px 15px;
+}
+
+#boxSelect {
+	float: left;
+	padding: 15px 0 0 0;
+	width: 150px;
+}
+
+label {
+	color: #000;
+	font-weight: bold;
+}
+
+label.off {
+	color: #666;
+}
+
+#boxSelect li {
+	display: block;
+	height: 50px;
+	list-style: none;
+}
+
+#boxSelect li label {
+	float: left;
+}
+
+.checkBox {
+	float: left;
+	margin: 0 10px 0 0;
+}
+
+#materials {
+	float: left;
+	width: 250px;
+}
+
+.textFormLong {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 0 15px 0;
+	padding: 3px 5px;
+	width: 240px;
+}
+
+.textFormHalf {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 0 15px 0;
+	padding: 3px 5px;
+	width: 100px;
+}
+
+#materials li {
+	float: left;
+	list-style: none;
+}
+
+#materials li.rightLi {
+	float: right;
+}
+
+#price {
+	float: right;
+	width: 360px;
+}
+
+.textFormShort {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 17px 15px 0;
+	padding: 3px 5px;
+	width: 90px;
+}
+
+.textFormShortGray {
+	background: #ccc url(images/grayBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #333;
+	margin: 3px 17px 15px 0;
+	padding: 3px 5px;
+	width: 90px;
+}
+
+.textFormThree {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 0 15px 0;
+	padding: 3px 5px;
+	width: 330px;
+}
+
+#price li {
+	float: left;
+	list-style: none;
+}
+
+#buttons {
+	background: url(images/buttonsBack.png) no-repeat;
+	display: block;
+	height: 51px;
+	padding: 10px 15px;
+}
+
+.cancelButton {
+	background: url(images/cancelButtonBack.png) no-repeat;
+	color: #fff;
+	float: right;
+	font-size: 12px;
+	font-weight: bold;
+	margin: 0 0 0 15px;
+	padding: 8px 32px 9px 32px;
+	text-decoration: none;
+}
+
+.saveButton {
+	background: url(images/saveButtonBack.png) no-repeat;
+	color: #fff;
+	float: right;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 8px 28px 9px 28px;
+	text-decoration: none;
+}
+
+/* Bundled Quote */
+
+#bundledQuote #fullForm {
+	border-left: solid #ccc 1px;
+	border-right: solid #ccc 1px;
+	padding: 15px 0px 0px 15px;
+}
+
+#bundledQuote p.formulaNote {
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.textFormSmallFirst {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 10px 15px 0;
+	padding: 3px 5px;
+	width: 90px;
+}
+
+.textFormSmall {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 10px 15px 0;
+	padding: 3px 5px;
+	width: 55px;
+}
+
+.textFormSmallGray {
+	background: #ccc url(images/grayBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #333;
+	margin: 3px 10px 15px 0;
+	padding: 3px 5px;
+	width: 70px;
+}
+
+#bundledQuote ul.bundledForm li {
+	float: left;
+	list-style: none;
+}
+
+.interiorButton {
+	background: url(images/interiorButton.png) no-repeat;
+	color: #333;
+	float: right;
+	font-size: 12px;
+	font-weight: bold;
+	margin: 0 15px 15px 0;
+	padding: 8px 42px 9px 42px;
+	text-decoration: none;
+}
+
+/* Volumetric Quote */
+
+#volumetricQuote #fullForm {
+	border-left: solid #ccc 1px;
+	border-right: solid #ccc 1px;
+	padding: 15px 0px 0px 15px;
+}
+
+#volumetricQuote p.formulaNote {
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.dropDownLong {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	height: 24px;
+	margin: 0 30px 15px 10px;
+	padding: 0 0 0 5px;
+	width: 200px;
+}
+
+label.aligned {
+	margin: 0 10px 0 0;
+}
+
+.dropDownShort {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	height: 24px;
+	margin: 0 15px 15px 0;
+	padding: 0 0 0 5px;
+	width: 104px;
+}
+
+#volumetricQuote #price ul {
+	margin: 17px 0 0 0;
+}
+
+#volumetricQuote ul.bundledForm li {
+	float: left;
+	list-style: none;
+}
+
+.textFormShortFirst {
+	background: #fff url(images/inputBack.png) repeat-x;
+	border: solid #ccc 1px;
+	color: #666;
+	margin: 3px 15px 15px 0;
+	padding: 3px 5px;
+	width: 160px;
+}
+
+	
+	

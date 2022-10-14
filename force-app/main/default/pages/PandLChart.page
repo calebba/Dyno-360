@@ -1,0 +1,14 @@
+<apex:page standardController="Quote__c" showHeader="false">
+<!-- 
+	<apex:includeScript value="{!URLFOR($Resource.Assets, '/js/FusionCharts.js')}"/>
+	
+	<div id="pandlChart" class="chart" align="center"></div>
+	<script type="text/javascript">
+		var chart = new FusionCharts("{!URLFOR($Resource.assets,'/swf/Column2D.swf')}?LoadDataErrorText={!$Label.Chart_No_Data}&InvalidXMLText={!$Label.Chart_No_Data}&ChartNoDataText={!$Label.Chart_No_Data}", '1', '300', '200', '0', '0');
+		chart.addParam("WMode", "Transparent");
+		chart.setDataXML('<chart numberSuffix='%' showValues='1' setAdaptiveYMin='1'><set label='GM%' value='{!Quote__c.GM_Percentage__c}'/><set label='CM%' value='{!Quote__c.CM_Percent__c}'/><set label='EBIT%' value='{!Quote__c.EBIT_F_Percent__c}'/></chart>');
+		chart.render("pandlChart");
+	</script>
+	 -->
+	 Hello World!	
+</apex:page>

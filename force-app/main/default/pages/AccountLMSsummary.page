@@ -1,0 +1,186 @@
+<apex:page standardController="PVA__c" extensions="AccountLMSControllerExtension">
+  
+    <apex:form >
+    <apex:sectionHeader title="LMS/COPA Data search"/>
+    <apex:pageBlock title="Search Criteria" >
+    
+           <apex:pageBlockButtons location="bottom">
+                   <apex:commandButton action="{!CalculateTable}" value="Run Report" reRender="BlockWrapper" />
+          </apex:pageBlockButtons>
+    
+          <apex:pageBlockSection columns="1" >
+               <apex:inputField value="{!PVA__c.Account__c}" id="custId"/>
+               <apex:inputField value="{!PVA__c.PVA_Start_Date__c}" label="Start Date"/>
+               <apex:inputField value="{!PVA__c.PVA_End_Date__c}" label="End Date"/>
+           </apex:pageBlockSection>   
+         
+          
+    </apex:pageBlock>
+<br/>
+    <apex:outputPanel id="BlockWrapper" >
+     <apex:pageBlock title="{!AccountName + ' for period ' + TEXT(PVA__c.PVA_Start_Date__c) + ' to ' + TEXT(PVA__c.PVA_End_Date__c)}" id="detailBlock" rendered="{!displayLinkBlock}">
+     
+      <apex:pageblocktable value="{!results3}" var="cso">
+      
+        <apex:column value="{!cso.month}" headervalue="Month"  />
+        <apex:column headervalue="Revenue">
+            <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!cso.revenue}" />
+             </apex:outputText>
+           <apex:facet name="footer">
+           <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalRevenue}" />
+             </apex:outputText>
+           
+           </apex:facet>
+        </apex:column>
+        
+        <apex:column headervalue="Gross Margin">
+            <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!cso.GrossMargin}" />
+             </apex:outputText>
+           <apex:facet name="footer">
+           <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalGrossMargin}" />
+             </apex:outputText>
+           
+           </apex:facet>
+        </apex:column>
+        
+        <apex:column value="{!cso.invoices}" headervalue="Invoices" >
+            <apex:facet name="footer">{!totalInvoices}<apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalInvoices}" />
+             </apex:outputText></apex:facet>
+        </apex:column>
+        <apex:column headervalue="DEL Hours" >
+        <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!cso.hrs}" />
+             </apex:outputText>
+        <apex:facet name="footer"><apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalHrs}" />
+             </apex:outputText></apex:facet>
+        </apex:column>
+               
+        <apex:column headervalue="Shot Hours" >
+        <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!cso.shothrs}" />
+             </apex:outputText>
+            <apex:facet name="footer"><apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalShotHrs}" />
+             </apex:outputText></apex:facet>
+        </apex:column>
+        <apex:column headervalue="Distance" >
+        <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!cso.miles}"  />
+             </apex:outputText>
+            <apex:facet name="footer"><apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalMiles}" />
+             </apex:outputText></apex:facet>
+        </apex:column>
+        <apex:column headervalue="Volume" >
+        <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!cso.pounds}"  />
+             </apex:outputText>
+            <apex:facet name="footer"><apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!totalPounds}" />
+             </apex:outputText></apex:facet>
+        </apex:column>
+
+    </apex:pageblocktable>
+    <br/>
+    <apex:outputLink value="/00O8A000000OgJM?pv0={!LEFT(PVA__c.Account__c,15)}" id="theLink" target="_blank">Drill in to COPA Report</apex:outputLink>
+    <br/>
+    </apex:pageBlock>
+    <br/>
+    <apex:pageBlock title="Product category totals" id="detailBlock2" rendered="{!displayLinkBlock}">
+        
+        <table class="list " border="0" cellpadding="0" cellspacing="0">
+            <tr class="headerRow"  >
+                <td/>
+                <apex:repeat value="{!phlLabels}" var="c" >
+                
+                <td>
+                    <apex:outputText value="{!c}" />
+                       
+                </td>
+                </apex:repeat>
+            </tr>
+            <tr>
+            
+                <td>Revenue</td>
+               <apex:repeat value="{!phlRev}" var="d" >
+                <td>
+                    
+                    <apex:outputText value="{0,number,###,###,###}">
+                        <apex:param value="{!d}"  />
+                         </apex:outputText>
+                </td>
+                </apex:repeat>
+            </tr>
+            <tr>
+                <td>Gross Margin</td>
+               <apex:repeat value="{!phlGrossMarg}" var="e" >
+                <td>
+                   
+                    <apex:outputText value="{0,number,###,###,###}">
+                        <apex:param value="{!e}"  />
+                         </apex:outputText>
+                </td>
+                
+                </apex:repeat>
+            </tr>
+            <tr>
+                <td>Volume</td>
+               <apex:repeat value="{!phlPounds}" var="f" >
+                <td>
+                    
+                    <apex:outputText value="{0,number,###,###,###}">
+                        <apex:param value="{!f}"  />
+                         </apex:outputText>
+                </td>
+                
+                </apex:repeat>
+            </tr>
+        </table>
+     
+    </apex:pageBlock> 
+    
+    <br/>
+    
+    <apex:pageBlock title="Material totals" id="detailBlock3" rendered="{!displayLinkBlock}">
+    
+    <apex:pageblocktable value="{!SummaryList}" var="r">
+         <apex:column value="{!r.MatName}" headervalue="Material"  />
+        <apex:column headervalue="Volume">
+            <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!r.Volume}" />
+             </apex:outputText>
+
+        </apex:column>
+        
+        <apex:column headervalue="Revenue">
+            <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!r.Revenue}" />
+             </apex:outputText>
+
+        </apex:column>
+        
+        <apex:column headervalue="Gross Margin">
+            <apex:outputText value="{0,number,###,###,###}">
+                <apex:param value="{!r.GrossMargin}" />
+             </apex:outputText>
+
+        </apex:column>
+        
+       <apex:column value="{!r.ProdGroup}" headervalue="Product Group"  />
+        
+       </apex:pageblocktable>
+
+     </apex:pageBlock>
+     
+     
+     
+     
+    </apex:outputPanel>
+    </apex:form>         
+</apex:page>

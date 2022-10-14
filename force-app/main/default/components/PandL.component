@@ -1,0 +1,381 @@
+<apex:component >
+	<apex:attribute name="data" type="PandLData" required="true" description="P&L Data to display"/>
+	<apex:outputPanel rendered="{!data.inGenerator == true}">
+		<apex:stylesheet value="{!URLFOR($Resource.NewPandLCss)}" /> 
+	</apex:outputPanel>
+	<apex:outputPanel rendered="{!data.inGenerator == false}">
+		<apex:stylesheet value="{!URLFOR($Resource.Assets, 'assets/css/PandL.css')}" />
+	</apex:outputPanel>
+
+	<div>
+		<div id="header" class="container">
+			<div id="first_row">
+				&nbsp;
+				<div id="spacer">&nbsp;</div>
+				<div id="information">
+					<p>{!data.customerName2}</p>
+					<p>{!data.customerName}</p>
+					<p>{!$Label.PandL_Scenario_Profit}</p>
+					<p>{!$Label.PandLPDF_Date} {!data.validFromDisplay} - {!data.validToDisplay}</p>
+				</div>
+				<div id="logo">
+					<apex:outputPanel rendered="{!data.inGenerator == true}">
+						<apex:image style="padding-top:10px;" url="{!URLFOR($Resource.BlueTransparentLogo)}" />
+					</apex:outputPanel>
+					<apex:outputPanel rendered="{!data.inGenerator == false}">
+						<apex:image url="{!URLFOR($Resource.Assets, 'assets/img/Dynologo.jpg')}" />
+					</apex:outputPanel>
+				</div>
+				<div class="clear"></div>
+			</div>
+			<div id="second_row">
+				<table>
+					<tr>
+						<th>{!$Label.PandLPDF_Region}</th>
+						<th>{!$Label.PandLPDF_Area}</th>
+						<th>{!$Label.PandLPDF_Site}</th>
+						<th>{!$Label.PandLPDF_Currency}</th> 
+						<th>{!$Label.PandLPDF_CNum}</th>
+						<th>Parent</th>
+						<th>{!$Label.PandLPDF_Scenario}</th>
+					</tr>
+					<tr>
+						<td>
+							<apex:outputPanel id="companynamewithingenerator" rendered="{!data.inGenerator == true}">
+								<a href="/apex/PandLGenerator?fromdate={!data.FromDate}&todate={!data.ToDate}&companyid={!data.CompanyId}">{!data.companyName}</a>
+							</apex:outputPanel>
+							<apex:outputPanel id="companynameoutsidegenerator" rendered="{!data.inGenerator == false}">
+								{!data.companyName} 
+							</apex:outputPanel>
+						</td>	
+						<td>
+							<apex:outputPanel id="regionnamewithingenerator" rendered="{!data.inGenerator == true}">
+								<a href="/apex/PandLGenerator?fromdate={!data.FromDate}&todate={!data.ToDate}&regionid={!data.RegionId}">{!data.regionName}</a>
+							</apex:outputPanel>
+							<apex:outputPanel id="regionnameoutsidegenerator" rendered="{!data.inGenerator == false}">
+								{!data.regionName} 
+							</apex:outputPanel>
+						</td>
+						<td>
+							<apex:outputPanel id="sitenamewithingenerator" rendered="{!data.inGenerator == true}">
+								<a href="/apex/PandLGenerator?fromdate={!data.FromDate}&todate={!data.ToDate}&siteid={!data.SiteId}">{!data.siteName}</a>
+							</apex:outputPanel>
+							<apex:outputPanel id="sitenameoutsidegenerator" rendered="{!data.inGenerator == false}">
+								{!data.siteName} 
+							</apex:outputPanel>
+						</td>
+						<td>{!data.currencyIsoCode}</td>
+						<td>{!data.sapCustomerNumber}</td>
+						<td>
+							<apex:outputPanel id="parentnamewithingenerator" rendered="{!data.inGenerator == true}">
+								<a href="/apex/PandLGenerator?fromdate={!data.FromDate}&todate={!data.ToDate}&parentid={!data.customerParentId}">{!data.parentName}</a>
+							</apex:outputPanel>
+							<apex:outputPanel id="parentnameoutsidegenerator" rendered="{!data.inGenerator == false}">
+								{!data.parentName} 
+							</apex:outputPanel>
+						</td>
+						<td>{!data.scenarioName}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div id="products" class="container">
+			<div class="title">{!$Label.PandLProductLine}</div>
+			<table class="product_table">
+				<tr>
+					<th>&nbsp;</th>
+					<th>PL005<br /><span style="font-size:80%">{!$Label.PandL_Bulk_Emulsions}</span></th>
+					<th>PL030<br /><span style="font-size:80%">{!$Label.PandL_Small_Pack}</span></th>
+					<th>PL032<br /><span style="font-size:80%">{!$Label.PandL_Boosters}</span></th>
+					<th>PL035<br /><span style="font-size:80%">{!$Label.PandL_Dyna}</span></th>
+					<th>PL040/2<br /><span style="font-size:80%">{!$Label.PandL_Elec_Det}</span></th>
+					<th>PL045/7<br /><span style="font-size:80%">{!$Label.PandL_Nonal_Det}</span></th>
+					<th>PL048<br /><span style="font-size:80%">{!$Label.PandL_Det_Chords}</span></th>
+					<th>PL49/50<br /><span style="font-size:80%">{!$Label.PandL_Access}</span></th>			
+					<th>PL060/1<br /><span style="font-size:80%">{!$Label.PandL_Large_Pkg}</span></th>
+					<th>PL065<br /><span style="font-size:80%">{!$Label.PandL_AN}</span></th>
+					<th>PL070<br /><span style="font-size:80%">{!$Label.PandL_Lead_Line}</span></th>
+					<th>PL080<br /><span style="font-size:80%">{!$Label.PandL_ANFO}</span></th>
+					<th>PL084<br /><span style="font-size:80%">{!$Label.PandL_Services}</span></th>	
+				</tr>
+				<tr>
+				
+					<td>{!$Label.PandLPDF_Net_Revenue}</td>
+					<td><c:Currency currency="{!data.productGmData.PL005.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL030.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL032.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL035.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL040_2.netRevenue}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL045_7.netRevenue}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL048.netRevenue}"  		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL049_50.netRevenue}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL060_1.netRevenue}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL065.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL070.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL080.netRevenue}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL084.netRevenue}"		paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr class="divided">
+					<td>{!$Label.PandL_COGS}</td>
+					<td><c:Currency currency="{!data.productGmData.PL005.costOfGoodsSold}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL030.costOfGoodsSold}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL032.costOfGoodsSold}" 		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL035.costOfGoodsSold}"		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL040_2.costOfGoodsSold}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL045_7.costOfGoodsSold}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL048.costOfGoodsSold}"		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL049_50.costOfGoodsSold}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL060_1.costOfGoodsSold}" 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL065.costOfGoodsSold}"  	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL070.costOfGoodsSold}"  	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL080.costOfGoodsSold}"		paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL084.costOfGoodsSold}" 		paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr>
+					<td>{!$Label.RA_GM}</td>
+					<td><c:Currency currency="{!data.productGmData.PL005.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL030.gm}"				 	paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL032.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL035.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL040_2.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL045_7.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL048.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL049_50.gm}"				paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL060_1.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL065.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL070.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL080.gm}"					paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL084.gm}"					paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr class="divided">
+					<td>{!$Label.RA_GM} %</td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL005.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL030.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL032.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL035.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL040_2.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL045_7.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL048.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL049_50.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL060_1.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL065.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL070.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL080.gmPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL084.gmPercentage,1)}%"/></td>
+				</tr>
+				<tr>
+					<td>{!$Label.PandLPDF_GMS}</td>
+					<td><c:Currency currency="{!data.productGmData.PL005.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL030.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL032.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL035.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL040_2.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL045_7.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL048.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL049_50.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL060_1.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL065.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL070.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL080.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+					<td><c:Currency currency="{!data.productGmData.PL084.gmSeeThrough}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr>
+					<td>{!$Label.PandLPDF_GMPS}</td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL005.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL030.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL032.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL035.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL040_2.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL045_7.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL048.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL049_50.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL060_1.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL065.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL070.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL080.gmSeeThroughPercentage,1)}%"/></td>
+					<td><apex:outputText value="{!ROUND(data.productGmData.PL084.gmSeeThroughPercentage,1)}%"/></td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="revAndGrossMargin" class="container">
+			<div class="title">{!$Label.PandLPDF_Revenue}</div>
+			<table class="ledger">
+				<tr><th class="description">{!$Label.PandLPDF_Desc}</th><th class="number">{!$Label.PandLPDF_Total}</th></tr>
+				<tr><td class="description">{!$Label.PandLPDF_Net_Revenue}</td><td class="number"><c:Currency currency="{!data.netRevenue}" paddedValues="0" conversionCheck="true"/></td></tr>
+				<tr><td class="description">{!$Label.PandLPDF_Cogs}</td><td class="number"><c:Currency currency="{!data.costOfGoodsSold}" paddedValues="0" conversionCheck="true"/></td></tr>
+				<tr><td class="description">{!$Label.PandLPDF_GM}</td><td class="number"><c:Currency currency="{!data.grossMargin}" paddedValues="0" conversionCheck="true"/></td></tr>
+				<tr><td class="description">{!$Label.PandLPDF_GMP}</td><td class="number">{!ROUND(data.grossMarginPercentage,1)}%</td></tr>									
+				<tr><td class="description">{!$Label.PCD_FSC_RCS}</td><td class="totalled number">&nbsp;<c:Currency currency="{!data.revenueModifier}" paddedValues="0" conversionCheck="true"/></td></tr>			
+				<tr><td class="description">&nbsp;</td><td class="number">&nbsp;</td></tr>	
+				<tr><td class="description">{!$Label.PandLPDF_COGSS}</td><td class="number"><c:Currency rendered="{!$Profile.Name='System Administrator' || $Profile.Name='# Custom DNA - Pricing Power User' || $Profile.Name = '# Custom DNA - Finance End User' || $Profile.Name='# Custom DNA - Finance Power User'}" currency="{!data.costOfGoodsSoldSeeThrough}" paddedValues="0" conversionCheck="true"/></td></tr>
+				<tr><td class="description">{!$Label.PandLPDF_GMS}</td><td class="number"><c:Currency rendered="{!$Profile.Name='System Administrator' || $Profile.Name='# Custom DNA - Pricing Power User'  || $Profile.Name = '# Custom DNA - Finance End User' || $Profile.Name='# Custom DNA - Finance Power User'}" currency="{!data.grossMarginSeeThrough}" paddedValues="0" conversionCheck="true"/></td></tr>
+				<tr><td class="description">{!$Label.PandLPDF_GMPS}</td><td class="number">{!If($Profile.Name = "System Administrator" || $Profile.Name = "# Custom DNA - Pricing Power User" || $Profile.Name = "# Custom DNA - Finance End User" || $Profile.Name = "# Custom DNA - Finance Power User",if(Contains(TEXT(ROUND(data.grossMarginSeeThroughPercentage,1)),"."),TEXT(ROUND(data.grossMarginSeeThroughPercentage,1))&"%",TEXT(ROUND(data.grossMarginSeeThroughPercentage,1))& ".0%"),"")}</td></tr>
+			</table>
+		</div>
+		
+		<!-- DIRECT LABOR COSTS AND CONTRIBUTION MARGIN -->
+		<div id="directCosts" class="container">
+			<div class="title">{!$Label.PandLPDF_Direct}</div>
+			<table class="ledger">
+				<tr>
+					<th class="description">{!$Label.PandLPDF_Allocation}</th>
+					<th class="number">{!$Label.PandLPDF_Pounds}</th>
+					<th class="number">{!RIGHT($Label.PandLPDF_Rate, 4)}</th>
+					<th class="number">{!$Label.PandLPDF_Total}</th>
+				</tr>
+				<tr>
+					<td class="description">{!$Label.PandLPDF_Delivery_Hrs}</td>
+					<td class="number">{!data.deliveryHours}</td>
+					<td class="number">
+						<apex:outputText value="{0,number,0.000}">
+							<apex:param value="{!data.deliveryHoursRate.value}" />
+						</apex:outputText>
+					</td>
+					<td class="number"><c:Currency currency="{!data.directCostDeliveryHrs}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr>
+					<td class="description">{!$Label.PandLPDF_SS_Hrs}</td>
+					<td class="totalled number">{!data.shotHours}</td>
+					<td class="totalled number">
+						<apex:outputText value="{0,number,0.000}">
+							<apex:param value="{!data.shotHoursRate.value}" />
+						</apex:outputText>
+					</td>
+					<td class="totalled number"><c:Currency currency="{!data.directCostShotHrs}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr>
+					<td class="description" colspan="3">&nbsp;</td>
+					<td class="number">&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="description" colspan="3">{!$Label.PandLPDF_Total_Direct}</td>
+					<td class="number"><c:Currency currency="{!data.directCosts}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr>
+					<td class="description" colspan="3">{!$Label.PandLPDF_CM}</td>
+					<td class="number"><c:Currency currency="{!data.contributionMargin}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<tr>
+					<td class="description" colspan="3">{!$Label.PandLPDF_CMP}</td>
+					<td class="number">{!ROUND(data.contributionMarginPercentage,1)}%</td>
+				</tr>
+				<tr><td class="description" colspan="3">&nbsp;</td><td class="number">&nbsp;</td></tr>
+				<tr><td class="description" colspan="3">&nbsp;</td><td class="number">&nbsp;</td></tr>
+				<tr><td class="description" colspan="3">&nbsp;</td><td class="number">&nbsp;</td></tr>
+			</table>
+		</div>
+		
+		<!-- SITE, REGION, AND COMPANY ALLOCATED INDIRECT COSTS -->
+		<div id="indirectCosts" class="container">
+			<div class="title">{!$Label.PandLPDF_Indirect}</div>
+			<table class="ledger">
+				<!-- HEADERS -->
+				<tr>
+					<th class="description">{!$Label.PandLPDF_Allocation}</th>
+					<th class="number">{!$Label.PandLPDF_Pounds}</th>
+					<th class="number">{!data.siteName}</th>
+					<th class="number">{!$Label.PandLPDF_S_Rate}</th>
+					<th class="number">{!data.regionName}</th>
+					<th class="number">{!$Label.PandLPDF_R_Rate}</th>
+					<th class="number">{!$Label.PandLPDF_Rate}</th>
+					<th class="number">{!$Label.PandLPDF_Total}</th>
+				</tr>
+				<!-- TOTAL DIRECT HOURS -->
+				<tr>
+					<td class="description">{!$Label.PandLPDF_Total_Hours}</td>
+					<td class="number"><c:Currency currency="{!data.totalHours}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number"><c:Currency currency="{!data.siteTotalHrs}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.totalHoursRate.value, 2)}</td>
+					<td class="number"><c:Currency currency="{!data.regionTotalHrs}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.rateTotalHrs.value, 2)}</td>
+					<td class="number">{!ROUND((data.totalHoursRate.value + data.rateTotalHrs.value), 2)}</td>
+					<td class="number"><c:Currency currency="{!data.totalHrsTotal}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<!-- DISTANCE -->
+				<tr>
+					<td class="description">{!$Label.PandL_Distance}</td>
+					<td class="number"><c:Currency currency="{!data.distance}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number"><c:Currency currency="{!data.siteDistance}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.distanceRate.value, 2)}</td>
+					<td class="number"><c:Currency currency="{!data.regionDistance}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.rateDistance.value, 2)}</td>
+					<td class="number">{!ROUND((data.distanceRate.value + data.rateDistance.value), 2)}</td>
+					<td class="number"><c:Currency currency="{!data.distanceTotal}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<!-- UNITS -->
+				<tr>
+					<td class="description">{!$Label.PandLPDF_Units}</td>
+					<td class="number"><c:Currency currency="{!data.units}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number"><c:Currency currency="{!data.siteUnits}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.unitsRate.value, 2)}</td>
+					<td class="number"><c:Currency currency="{!data.regionUnits}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.rateUnits.value, 2)}</td>
+					<td class="number">{!ROUND((data.unitsRate.value + data.rateUnits.value), 2)}</td>
+					<td class="number"><c:Currency currency="{!data.unitsTotal}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<!-- INVOICES -->
+				<tr>
+					<td class="description">{!$Label.PandLPDF_Invoices}</td>
+					<td class="number"><c:Currency currency="{!data.invoices}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number"><c:Currency currency="{!data.siteInvoices}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.invoicesRate.value, 2)}</td>
+					<td class="number"><c:Currency currency="{!data.regionInvoices}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">{!ROUND(data.rateInvoices.value, 2)}</td>
+					<td class="number">{!ROUND((data.invoicesRate.value + data.rateInvoices.value), 2)}</td>
+					<td class="number"><c:Currency currency="{!data.invoicesTotal}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<!-- NET REVENUE -->
+				<tr>
+					<td class="description">{!$Label.PandLPDF_Net_Revenue}</td>
+					<td class="number totalled"><c:Currency currency="{!data.indirectNetRevenue}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number totalled"><c:Currency currency="{!data.siteNetRev}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number totalled">{!ROUND(data.netRevenueRate.value, 2)}</td>
+					<td class="number totalled"><c:Currency currency="{!data.regionNetRev}" paddedValues="0" conversionCheck="true" /></td>
+					<td class="number totalled">{!ROUND(data.rateNetRevenue.value, 2)}</td>
+					<td class="number totalled">{!ROUND((data.netRevenueRate.value + data.rateNetRevenue.value), 2)}</td>
+					<td class="number totalled"><c:Currency currency="{!data.netRevTotal}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+				<!--  TOTAL ALLOCATED INDIRECT COSTS -->
+				<tr>
+					<td class="description">{!$Label.PandLPDF_Total_Indirect}</td>
+					<td class="number">&nbsp;</td>
+					<td class="number"><c:Currency currency="{!data.total2}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">&nbsp;</td>
+					<td class="number"><c:Currency currency="{!data.total3}" paddedValues="0" conversionCheck="true"/></td>
+					<td class="number">&nbsp;</td>
+					<td class="number">&nbsp;</td>
+					<td class="number"><c:Currency currency="{!data.total5}" paddedValues="0" conversionCheck="true"/></td>
+				</tr>
+			</table>
+		</div>
+		<!--  
+		<div id="footer">
+			<div id="ebita" class="container">
+				<div class="title">{!$Label.PandLPDF_Ebita}&nbsp;{!$Label.PandLPDF_Without}&nbsp;{!$Label.CorporateAllocationPercentage}%&nbsp;{!$Label.PandLPDF_CA}</div>
+				<table class="ledger">
+					<tr>
+						<td class="description">{!$Label.PandLPDF_Ebita}</td><td class="number"><c:Currency currency="{!data.ebit}" paddedValues="0" conversionCheck="true"/></td>
+					</tr>
+					<tr>
+						<td class="description">{!$Label.PandLPDF_Ebita} %</td><td class="number">{!ROUND(data.ebitPercentage,1)}%</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		-->
+		<div id="footer">
+			<div id="ebita" class="container">
+				<div class="title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{!$Label.PandLPDF_Ebita}&nbsp;{!$Label.PandLPDF_Before}&nbsp;8%&nbsp;{!$Label.PandLPDF_CA}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+				<table class="ledger">
+					<tr>
+						<td class="description">{!$Label.PandLPDF_Ebita}</td><td class="number"><c:Currency currency="{!data.ebitWith}" paddedValues="0" conversionCheck="true"/></td>
+					</tr>
+					<tr>
+						<td class="description">{!$Label.PandLPDF_Ebita} %</td><td class="number">{!ROUND(data.ebitPercentageWith,1)}%</td>
+					</tr>
+				</table>
+			</div>		
+		</div>
+	</div>
+</apex:component>

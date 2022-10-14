@@ -1,0 +1,337 @@
+<apex:page controller="SLIAdvancedAddController">
+    <apex:sectionHeader title="{!$Label.Advanced_Add_SLI}" />
+    <apex:form >
+        <apex:pageBlock title="{!$Label.Advanced_Add_SLI_Adv}" mode="edit">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.Advanced_Add_Save_SLI}" action="{!performSave}" />
+                <apex:commandButton value="{!$Label.Button_Cancel}" action="{!performCancel}" />
+            </apex:pageBlockButtons>
+            <apex:pageMessages id="errors" />
+            <apex:pageBlockSection title="{!$Label.Advanced_Add_Initial_Entry}" columns="2" id="initialEntry">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Sales_Site__c.label}: " />
+                    <apex:inputField value="{!currentLine.Sales_Site__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Price_Valid_From__c.label}: " />
+                    <apex:inputField value="{!currentLine.Price_Valid_From__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Source_Sales_Site__c.label}: " />
+                    <apex:inputField value="{!currentLine.Source_Sales_Site__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Price_Valid_To__c.label}: " />
+                    <apex:inputField value="{!currentLine.Price_Valid_To__c}" />
+                </apex:pageBlockSectionItem>                                            
+                <apex:pageBlockSectionItem >
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Lock_Expiration_Date__c.label}: " />
+                    <apex:inputField value="{!currentLine.Lock_Expiration_Date__c}" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="{!$Label.Material_Selection_Title}" columns="2" id="materialSelection">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.Advanced_Add_Unextend_Mat}" />
+                    <apex:inputCheckbox value="{!extendSites}"  />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Formula_Flag__c.label}: "  />
+                    <apex:inputCheckbox value="{!currentLine.Formula_Flag__c}" >
+                        <apex:actionSupport event="onclick" rerender="materialSelection, itemDetailSection" action="{!onFormulaCheck}" />
+                    </apex:inputCheckbox>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >    
+                    <apex:outputLabel value="*{!$ObjectType.Material_Item__c.fields.PHL1__c.label}: "  />
+                    <apex:selectList value="{!selectedPHL1}" size="1" >
+                        <apex:selectOptions value="{!pHL1Options}" />
+                        <apex:actionSupport event="onchange" action="{!selectPHL1}" rerender="materialSelection, errors" status="obtainingValues"/>
+                        <apex:actionStatus id="obtainingValues" startText="{!$Label.Advanced_Add_Obtain_PHL2}" />
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>                        
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="*{!$ObjectType.Material_Item__c.fields.PHL2__c.label}"/>
+                    <apex:selectList value="{!selectedPHL2}" size="1">
+                        <apex:selectOptions value="{!pHL2Options}"/>
+                        <apex:actionSupport event="onchange" action="{!selectPHL2}" rerender="materialSelection, errors" status="obtainingValues2"/>
+                        <apex:actionStatus id="obtainingValues2" startText="{!$Label.Advanced_Add_Obtain_PHL3}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="phl3Item">
+                    <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.PHL3__c.label}: "  />
+                    <apex:selectList value="{!selectedPHL3}" size="1" >
+                        <apex:selectOptions value="{!pHL3Options}" />
+                        <apex:actionSupport action="{!setMaterialFromPHL3}" event="onchange" rerender="materialSelection, itemDetailSection" status="formulaLookup"/>                       
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="codeItem">
+                    <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}: "  />
+                    <apex:selectList value="{!selectedCode}" size="1" >
+                        <apex:selectOptions value="{!materialCodes}" />
+                        <apex:actionSupport action="{!setMaterialFromCode}" event="onchange" rerender="materialSelection, itemDetailSection" status="formulaLookup"/>
+                        <apex:actionStatus id="formulaLookup" startText="{!$Label.Scenario_Edit_Obtaining_Formula}" />                      
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel id="formulaBoxLabel" value="{!IF(currentLine.Formula_Flag__c, '*', '')}{!$ObjectType.Formula_Mapping__c.fields.Formula__c.label}: " />
+                    <apex:selectList id="formulaBoxValue" disabled="{!NOT(currentLine.Formula_Flag__c)}" value="{!selectedFormula}" size="1">
+                        <apex:selectOptions value="{!formulas}" />
+                    </apex:selectList> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value=" " />
+                    <apex:commandLink value="{!$Label.QGP_Advanced_Selection}" action="{!displayPopup}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            
+            
+            
+            <apex:pageBlockSection title="{!$Label.Advanced_Add_Include_Details} {!theMaterial.Name}" columns="10" id="itemDetailSection">
+                <apex:pageBlockSectionItem labelStyle="width:4.5%;" dataStyle="width:4.5%;">
+                <apex:outputLabel value=" "/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Quantity__c.label}: " />
+                    <apex:inputField value="{!currentLine.Quantity__c}" id="quantityField" />
+                </apex:pageBlockSectionItem>
+                
+                
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.UoM__c.label}: " />
+                    <apex:outputField value="{!currentLine.UoM__c}" id="uomSelectorfixed" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Actual_Price__c.label}: " />
+                    <apex:outputPanel >
+                        <apex:outputField value="{!currentLine.Actual_Price__c}" rendered="{!currentLine.Formula_Flag__c}" />
+                        <apex:inputField value="{!currentLine.Actual_Price__c}" rendered="{!NOT(currentLine.Formula_Flag__c)}" id="actualField">
+                            <apex:actionSupport event="onchange" rerender="itemDetailSection" />
+                        </apex:inputField>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="*{!$ObjectType.Quote_Line_Item__c.fields.Per__c.label}: " />
+                    <apex:outputPanel >
+                        <apex:outputField value="{!currentLine.Per__c}" rendered="{!currentLine.Formula_Flag__c}" />
+                        <apex:inputField value="{!currentLine.Per__c}" rendered="{!NOT(currentLine.Formula_Flag__c)}">
+                            <apex:actionSupport event="onblur" action="{!changePer}" rerender="quantityField, floorField, targetField, actualField"/>
+                        </apex:inputField>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.UoM__c.label}: " />
+                    <apex:selectList value="{!currentLine.UoM__c}" id="uomSelector" size="1" disabled="{!currentLine.Formula_Flag__c}">
+                        <apex:selectOptions value="{!validUom}" />
+                        <apex:actionSupport event="onchange" action="{!performConversion}" rerender="quantityField, floorField, targetField, actualField, uomSelectorfixed" status="convertingQuantity"/>
+                        <apex:actionStatus id="convertingQuantity" startText="     {!$Label.QGP_Convert}" />
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Floor_Price__c.label}: " />
+                    <apex:outputField value="{!currentLine.Floor_Price__c}" id="floorField" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Target_Price__c.label}: " />
+                    <apex:outputField value="{!currentLine.Target_Price__c}" id="targetField"  />           
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Avg_Sell_Price__c.label}: " />
+                    <!--  <c:AdjustCurrencyComponent CurrencyType="{!scenario.CurrencyIsoCode & ' '}" ConversionValue="{!avgPrice}" /> --> 
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem labelStyle="width:4.25%;" dataStyle="width:4.25%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Reason__c.label}: " rendered="{!AND(NOT(currentLine.Formula_Flag__c), currentLine.Floor_Price__c > currentLine.Actual_Price__c)}" />
+                    <apex:inputField value="{!currentLine.Reason__c}" rendered="{!AND(NOT(currentLine.Formula_Flag__c), currentLine.Floor_Price__c > currentLine.Actual_Price__c)}" />
+                </apex:pageBlockSectionItem>                                                        
+            </apex:pageBlockSection>
+            
+            
+            
+            
+            
+            <apex:pageBlockSection title="{!$Label.Advanced_Add_Cost_Adj}" columns="2" rendered="{!isFinanceUser}" >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Cost_Adjustment__c.label}: " />
+                    <apex:inputField value="{!currentLine.Cost_Adjustment__c}">
+                        <apex:actionSupport event="onchange" rerender="costAdjustmentReason" />
+                    </apex:inputField>              
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel id="costAdjustmentReason" value="{!IF(currentLine.Cost_Adjustment__c = 0,'','*')}{!$ObjectType.Quote_Line_Item__c.fields.Cost_Adjustment_Reason__c.label}: " />
+                    <apex:inputField value="{!currentLine.Cost_Adjustment_Reason__c}" style="width:200%;" />                    
+                </apex:pageBlockSectionItem>                
+            </apex:pageBlockSection>
+            
+            
+            
+            
+            
+            
+            <apex:pageBlockSection title="{!$Label.Advanced_Add_Informational}" columns="3" id="infoFields">
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Notify_Credit__c.label}: " />
+                    <apex:inputField value="{!currentLine.Notify_Credit__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Available_Credit_Limit__c.label}: " />
+                    <apex:inputField value="{!currentLine.Available_Credit_Limit__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Monthly_Purchases__c.label}: " />
+                    <apex:inputField value="{!currentLine.Monthly_Purchases__c}" />
+                </apex:pageBlockSectionItem>        
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Volume_Based__c.label}: " />
+                    <apex:inputField value="{!currentLine.Volume_Based__c}" />
+                </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Credit_Limit__c.label}: " />
+                    <apex:inputField value="{!currentLine.Credit_Limit__c}" />
+                </apex:pageBlockSectionItem>    
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Percent__c.label}: " />
+                    <apex:inputField value="{!currentLine.Percent__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Substitution__c.label}: " />
+                    <apex:inputField value="{!currentLine.Substitution__c}" />
+                </apex:pageBlockSectionItem>        
+                <apex:pageBlockSectionItem labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Discount_Surcharge__c.label}: " />
+                    <apex:inputField value="{!currentLine.Discount_Surcharge__c}">
+                        <apex:actionSupport event="onchange" rerender="infoFields" />
+                    </apex:inputField>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem id="discAmntSect" labelStyle="width:16.5%;" dataStyle="width:16.5%;">
+                    <apex:outputLabel rendered="{!currentLine.Discount_Surcharge__c}" value="*{!$ObjectType.Quote_Line_Item__c.fields.Discount_Amount__c.label}: " />
+                    <apex:inputField rendered="{!currentLine.Discount_Surcharge__c}" value="{!currentLine.Discount_Amount__c}" />
+                </apex:pageBlockSectionItem>    
+                <apex:inputField value="{!currentLine.Substitution_Comments__c}" style="width:315%;" /><apex:outputLabel value="" /><apex:outputLabel value="" />
+                <apex:inputField value="{!currentLine.Description__c}" style="width:315%;" /><apex:outputLabel value="" /><apex:outputLabel value="" />
+                <apex:inputField value="{!currentLine.Adder_Notes__c}" style="width:315%;" /><apex:outputLabel value="" /><apex:outputLabel value="" />                                                                                                                             
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    
+    <apex:form >
+        <apex:outputPanel id="popup">
+            <apex:outputPanel styleClass="customPopup" layout="block" rendered="{!showPopup}">
+                <apex:pageBlock title="{!$Label.Advanced_Add_Material_Selection}" mode="edit">
+                    <apex:pageBlockButtons location="top" style="float:right;padding-right:15px;padding-top:5px;">
+                        <apex:commandLink action="{!displayPopup}" value="Close" rerender="popup" />
+                    </apex:pageBlockButtons>
+                    <apex:pageBlockSection columns="2" title="{!$Label.Advanced_Add_Initial_Entry_Data} Data">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Sales_Site__c.label}: " />
+                            <apex:outputField value="{!currentLine.Sales_Site__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Price_Valid_From__c.label}: " />
+                            <apex:outputField value="{!currentLine.Price_Valid_From__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Source_Sales_Site__c.label}: " />
+                            <apex:outputField value="{!currentLine.Source_Sales_Site__c}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Price_Valid_To__c.label}: " />
+                            <apex:outputField value="{!currentLine.Price_Valid_To__c}" />
+                        </apex:pageBlockSectionItem>            
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection columns="2" title="{!$Label.Advanced_Add_Search}">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Opportunity.fields.AccountId.label}: " />
+                            <apex:inputField value="{!dummyOpp.AccountId}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.Preferred__c.label}: " />
+                            <apex:inputCheckbox value="{!searchPreferred}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Quote_Line_Item__c.fields.Source_Sales_Site__c.label}: " />
+                            <apex:selectList value="{!sourceSalesSite}" size="1">
+                                <apex:selectOptions value="{!customerSites}" />
+                            </apex:selectList>  
+                        </apex:pageBlockSectionItem>
+                        <!--  <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Material_Cost__c.fields.Inventory_Level__c.label}: " />
+                            <apex:inputField value="{!dummyCost.Inventory_Level__c}" />                         
+                        </apex:pageBlockSectionItem>-->
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.Material_Description__c.label}: " />
+                            <apex:inputText value="{!searchDescription}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:actionStatus id="phl2Status" startText="{!$Label.Advanced_Add_Add_PHL3}" stopText="{!$ObjectType.Material_Item__c.fields.PHL1__c.label}: " />
+                            <apex:selectList value="{!selectedPHL1Advanced}" size="1">
+                                <apex:selectOptions value="{!pHL1OptionsAdvanced}" />
+                                <apex:actionSupport event="onchange" rerender="phl2Opts" status="phl2Status" />         
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}: " />
+                            <apex:inputText value="{!searchCode}" />
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                            <apex:actionStatus id="phl3Status" startText="Getting PHL3s" stopText="PHL2"/>
+                            <apex:selectList value="{!selectedPHL2Advanced}" size="1" id="phl2Opts">
+                                <apex:selectOptions value="{!pHL2OptionsAdvanced}"/>
+                                <apex:actionSupport event="onchange" rerender="phl3Opts" status="phl3Status" />
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                        </apex:pageBlockSectionItem>                        
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.PHL3__c.label}: " />
+                            <apex:selectList value="{!selectedPHL3Advanced}" size="1" disabled="{!selectedPHL1Advanced = '--None--'}" id="phl3Opts">
+                                <apex:selectOptions value="{!pHL3OptionsAdvanced}" />               
+                            </apex:selectList>
+                        </apex:pageBlockSectionItem>
+                                                                                        
+                    </apex:pageBlockSection>
+                    <apex:pageBlockSection columns="1" title="{!$Label.Search_Results}" id="searchSection" />
+                    <apex:commandButton value="{!$Label.Update_Results}" action="{!searchRecords}" rerender="resultTable, searchErrors" status="searchingStatus" /><br /><br />
+                    <apex:actionStatus id="searchingStatus" startText="{!$Label.Searching}"/>
+                        <div style="height:350px;overflow:auto;">
+                            <apex:pageMessages id="searchErrors" />
+                            <apex:pageBlockTable value="{!results}" var="result" id="resultTable">
+                                <apex:column headerValue="{!$ObjectType.Material_Item__c.fields.Material_Description__c.label}">
+                                    <apex:outputLabel value="{!result.Material_Item__r.Material_Description__c}" />
+                                </apex:column>
+                                <apex:column headerValue="{!$ObjectType.Material_Item__c.fields.PHL3__c.label}">
+                                    <apex:commandLink rerender="popup, itemDetailSection, materialSelection, initialEntry, errors" action="{!selectItemByPHL3}" value="{!result.Material_Item__r.Product_Hierarchy__c}">
+                                        <apex:param name="materialHierarchy" value="{!result.Material_Item__r.Product_Hierarchy__c}" /> 
+                                        <apex:param name="materialSite" value="{!result.Sales_Site__c}" />          
+                                    </apex:commandLink>
+                                </apex:column>
+                                <apex:column headerValue="{!$ObjectType.Material_Item__c.fields.Material_Code__c.label}">
+                                    <apex:commandLink rerender="popup, itemDetailSection, materialSelection, initialEntry, errors" action="{!selectItem}" value="{!result.Material_Item__r.Material_Code__c}">
+                                        <apex:param name="materialID" value="{!result.Material_Item__c}" />
+                                        <apex:param name="materialName" value="{!result.Material_Item__r.Name}" />
+                                        <apex:param name="materialPHL1" value="{!result.Material_Item__r.PHL1__c}" />
+                                        <apex:param name="materialSite" value="{!result.Sales_Site__c}" />                                  
+                                    </apex:commandLink>
+                                </apex:column>
+                                <apex:column value="{!result.Sales_Site__c}" />                                                                                                     
+                            </apex:pageBlockTable>
+                        </div>
+                </apex:pageBlock>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    
+    
+    <apex:stylesheet value="{!IF(isIE,URLFOR($Resource.Assets, 'assets/css/SLIAdvIE.css'),URLFOR($Resource.Assets, 'assets/css/SLIAdvNotIE.css'))}" />
+    
+    </apex:form>
+      
+
+    
+
+</apex:page>

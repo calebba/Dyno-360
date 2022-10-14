@@ -1,0 +1,19 @@
+<apex:page standardController="Quote__c" extensions="ScenarioContactController">
+	<apex:form >
+ 		<apex:sectionHeader title="{!$Label.SC_Title}" />
+ 		<apex:pageBlock >
+	 		<apex:pageBlockSection columns="2" collapsible="false" id="criteriaSelection"> 
+	 			<apex:inputField value="{!scenarioContactRecord.Quote__c}"/>
+	 			<apex:inputField value="{!scenarioContactRecord.Contact__c}"/>
+	 			<apex:inputField value="{!scenarioContactRecord.CurrencyIsoCode}"/>
+	 		</apex:pageBlockSection> 
+	 	
+	 		<apex:pageBlockButtons >
+		 		<apex:commandButton value="{!$Label.Button_Save}" action="{!saveScenarioContact}" />
+	 			<apex:commandButton value="{!$Label.Button_SaveNew}" action="{!saveAndNewScenarioContact}"/>			
+ 				<apex:commandButton value="{!$Label.Button_Cancel}" action="{!returnToScenario}" />
+	 		</apex:pageBlockButtons>	
+	 	</apex:pageBlock>
+	 	
+ 	</apex:form>
+</apex:page>

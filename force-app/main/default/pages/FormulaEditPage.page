@@ -1,0 +1,37 @@
+<apex:page standardController="Formula__c" extensions="FormulaEditExtension">
+	<apex:sectionHeader title="{!sectionTitle}" subTitle="{!sectionSubtitle}"/>
+	
+	<apex:form >
+	<apex:pageMessages />
+	<apex:pageBlock title="{!sectionTitle}" mode="edit">
+		<apex:pageBlockButtons >
+			<apex:commandButton value="{!$Label.Button_Save}" action="{!save}"/>
+			<apex:commandButton value="{!$Label.Button_Cancel}" action="{!cancel}"/>
+		</apex:pageBlockButtons>
+		<apex:pageBlockSection title="{!$Label.Information}" columns="2">
+			<apex:inputField required="true" value="{!Formula__c.Name}"/>
+			<apex:inputField required="true" value="{!Formula__c.Material_Item__c}"/>
+			<apex:inputField value="{!Formula__c.Gas__c}"/>
+			<apex:inputField value="{!Formula__c.NH3__c}"/>
+		</apex:pageBlockSection>
+		<apex:pageBlockSection columns="1">
+			<apex:pageBlockTable title="Formula Components" value="{!lineItems}" var="item" rendered="{!lineItems.size > 0}">
+				<apex:column value="{!item.Formula_Component__r.Name}"/>
+				<apex:column value="{!item.Formula_Component__r.Group__c}"/>
+				<apex:column value="{!item.Formula_Component__r.Value__c}"/>
+			</apex:pageBlockTable>
+			<apex:outputText rendered="{!lineItems.size = 0}" value="{!$Label.Formula_Edit_Selection_Error}"/>
+		</apex:pageBlockSection>
+		<apex:pageBlockSection columns="1">
+			<apex:pageBlockSectionItem >
+				<apex:outputText value="{!$ObjectType.Formula__c.fields.Formula_Text__c.Label}"/>
+				<apex:inputTextarea value="{!Formula__c.Formula_Text__c}" cols="100" rows="4"/>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputText value=" " />
+				<apex:outputText rendered="{!NOT(lineItems.size = 0)}" value="{!$Label.Formula_Component_Help}"/>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+	</apex:pageBlock>
+	</apex:form>
+</apex:page>

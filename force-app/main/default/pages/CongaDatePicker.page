@@ -1,0 +1,112 @@
+<apex:page language="en" showHeader="false" sidebar="false" standardStylesheets="true" >
+<script> var previousOnload = window.onload; window.onload = function() { if (previousOnload) { previousOnload(); } setComments(); } </script>
+<link type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/themes/cupertino/jquery-ui.css" rel="stylesheet" />
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.js"></script>
+<script type="text/javascript" src="https://jquery-ui.googlecode.com/svn/trunk/ui/i18n/jquery.ui.datepicker-en-GB.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
+<apex:pageBlock title="Please select the start and end dates for the Report Card:">
+<p>Start Date:<br /><input id="startDate" type="textbox"/></p>
+<p>End Date:<br /><input id="endDate" type="textbox"/></p>
+<p>Account name to appear on Report Card:<br /><textarea id="accountName" cols="60" rows="1"/></p>
+<p>Comments for Report:<br/><textarea name="Text1" cols="60" rows="5" id="reportCommentsBox"></textarea></p>
+<!--
+$(selector).datepicker({
+defaultDate: new Date(2009, 1-1, 26)});
+$(selector).datepicker({defaultDate: '01/26/2009'});
+$(selector).datepicker({defaultDate: +7});
+$(selector).datepicker({defaultDate: '+1m -1d'});
+-->
+<script type="text/javascript">
+$(function() {
+$("#startDate").datepicker(); // You must leave this line
+$("#startDate").datepicker($.datepicker.regional['en-GB']);
+$("#startDate").datepicker('setDate', '-6m +1d'); // This is optional
+});s
+</script>
+<script type="text/javascript">
+$(function() {
+$("#endDate").datepicker(); // You must leave this line
+$("#endDate").datepicker($.datepicker.regional['en-GB']);
+$("#endDate").datepicker('setDate', 'today'); // This is optional
+});
+
+</script>
+<br />
+<input type="button" onclick="launchConga()" value="Launch" />
+
+<script>
+function launchConga(){
+var startDate = document.getElementById("startDate");
+var endDate = document.getElementById("endDate");
+
+var defComments = 'DV1=' + getUrlParameter('DV1');
+var defAccount = 'DV2=' + getUrlParameter('DV2');
+
+// For Queries...
+var sDate = new Date(startDate.value);
+var eDate = new Date(endDate.value);
+
+sDate.setDate(1);
+eDate.setMonth(eDate.getMonth() + 1, 0);
+
+var startDateForQueries = sDate.getFullYear() + "-" + ("0" + (sDate.getMonth() + 1)).slice(-2) + "-" + ("0" + sDate.getDate()).slice(-2);
+var endDateForQueries = eDate.getFullYear() + "-" + ("0" + (eDate.getMonth() + 1)).slice(-2) + "-" + ("0" + eDate.getDate()).slice(-2);
+
+var qsIndex = window.parent.location.href.indexOf('?') + 1;
+var qs = window.parent.location.href.substring(qsIndex, window.parent.location.href.length);
+
+qs = qs.replace(defComments, "{defComments}" );
+qs = qs.replace(defAccount, "{defAccount}");
+
+qs = unescape(qs);
+
+qs = qs.replace("{defComments}", 'DV1=' + encodeURIComponent( document.getElementById('reportCommentsBox').value) );
+qs = qs.replace("{defAccount}", 'DV2=' + encodeURIComponent( document.getElementById('accountName').value));
+
+// Use these lines if you're passing to Reports:
+//qs = qs.replace(/{StartDateR}/g , startDate.value);
+//alert(qs);
+//qs = qs.replace(/{EndDateR}/g , endDate.value);
+
+// Use these lines if you're passing to Queries:
+qs = qs.replace(/{StartDateQ}/g, startDateForQueries );
+qs = qs.replace(/{EndDateQ}/g, endDateForQueries );
+
+window.parent.location.href = "https://composer.congamerge.com?" + qs;
+
+}
+
+function setComments(){
+    
+    document.getElementById('accountName').value = decodeURIComponent(getUrlParameter('DV2')).replace(/\++/g, ' ');
+
+    var sComments = getUrlParameter('DV1');
+    
+    sComments = sComments.replace(/%5Cr/g, "\r" );
+    sComments = sComments.replace(/%5Cn/g, "\n" );
+    
+    sComments = decodeURIComponent(sComments.replace(/\++/g, ' '));
+
+
+    document.getElementById('reportCommentsBox').value = sComments;
+    
+}
+
+var getUrlParameter = function getUrlParameter(sParam) {
+    //var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+</script>
+</apex:pageBlock>
+</apex:page>

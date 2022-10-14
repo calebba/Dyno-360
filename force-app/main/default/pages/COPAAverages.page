@@ -1,0 +1,12 @@
+<apex:page controller="COPAAverages" action="{!calculateAverages}"><apex:form >
+    <apex:pageBlock title="My Content" mode="edit">
+        <apex:pageBlockButtons >
+            <apex:commandButton action="{!back}" value="Back"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection columns="1">
+                <apex:pageBlockSectionItem >{!message}
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,36 @@
+<apex:page standardController="Formula__c" extensions="FormulaDisplayExtension">
+	<apex:sectionHeader title="{!$ObjectType.Formula__c.Label}" subTitle="{!Formula__c.Name}"/>
+	
+	<apex:form >
+	<apex:pageMessages id="errors" />
+	<apex:pageBlock title="{!sectionTitle}" mode="maindetail">
+		<apex:pageBlockButtons >
+			<apex:commandButton value="{!$Label.Button_Edit}" action="{!edit}"/>
+			<apex:commandButton value="{!$Label.Button_Delete}" action="{!delete}"/>
+		</apex:pageBlockButtons>
+		<apex:pageBlockSection columns="2">
+			<apex:outputField value="{!Formula__c.Name}"/>
+			<apex:outputField value="{!Formula__c.Material_Item__c}"/>
+			<apex:outputField value="{!Formula__c.Gas__c}"/>
+			<apex:outputField value="{!Formula__c.NH3__c}"/>
+		</apex:pageBlockSection>
+		<apex:pageBlockSection columns="2">
+			<apex:outputField value="{!Formula__c.Formula_Text__c}"/>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Formula Text (Evaluated)"/>
+				<apex:outputText value="{!parsedFormula}"/>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Formula Value"/>
+				<apex:outputText value="{!formulaValue}">
+					<apex:actionSupport event="onchange" rerender="errors" />
+				</apex:outputText>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+	</apex:pageBlock>
+	</apex:form>
+	
+	<apex:relatedList list="Formula_Line_Items__r"/>
+	<apex:relatedList list="Formula_Mappings__r"/>
+	
+</apex:page>

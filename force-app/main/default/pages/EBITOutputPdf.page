@@ -1,0 +1,10 @@
+<apex:page controller="EBITReporting" language="{!currentLanguage}" renderas="pdf" showHeader="false" action="{!EBITOutputPdfGenerate}" readonly="true">
+	<head>
+		<style type="text/css">
+			@page {
+				size: 49.005cm 34.65cm;
+			}
+		</style>
+	</head>
+	<c:PandL data="{!plDataReportPDF}" />
+</apex:page>

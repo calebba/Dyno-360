@@ -1,0 +1,187 @@
+<apex:page controller="DNAConsultPageController" tabStyle="Consulting_Services__c" title="Consulting Services Reporting" >
+    <apex:sectionHeader title="DNA Consulting Report Form" subtitle="Please enter info."/>
+    <apex:form id="main">
+        <apex:pageBlock >
+            <apex:pageBlockSection collapsible="false" columns="2">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Account"/>
+                        <apex:actionregion >
+                           <apex:actionRegion >    
+                                <apex:InputField value="{!cs.Full_Account_Name__c}" required="true">
+                                    <apex:actionSupport event="onchange" action="{!refreshaccountinfo}" rerender="main" status="account_status"/>                            
+                                </apex:inputField>
+                            </apex:actionRegion>
+                            <apex:actionStatus startText="Updating Account..." id="account_status" />
+                        </apex:actionregion>    
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Report Dates:"/>
+                    <apex:OutputText value="" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Account #"/>
+                    <apex:OutputText value="{!Shipto}" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Start Date"/>
+                        <apex:outputPanel >   
+                            <apex:actionRegion >    
+                                <apex:InputField value="{!cs.ReportStartDate__c}" required="true">
+                                    <apex:actionSupport event="onchange" action="{!validatedates}" rerender="main" status="start_date_status"/>                            
+                                </apex:inputField>
+                            </apex:actionRegion>
+                            <apex:actionStatus startText="Start Date..." id="start_date_status" />
+                        </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Parent Account #"/>
+                    <apex:OutputField value="{!Accountname.Parent.SAP_Account_Number__c}" />
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="End Date"/>
+                        <apex:outputPanel >   
+                            <apex:actionRegion >    
+                                <apex:InputField value="{!cs.ReportEndDate__c}" required="true">
+                                    <apex:actionSupport event="onchange" action="{!validatedates}" rerender="main" status="end_date_status"/>                            
+                                </apex:inputField>
+                            </apex:actionRegion>
+                            <apex:actionStatus startText="End Date..." id="end_date_status" />
+                        </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+           </apex:pageBlockSection>
+           
+           <apex:pageBlockSection >
+               <apex:commandButton action="{!generatereport}" value="Generate Report" rendered="{!Accountname.Name != Null && IF(ISNULL(cs.ReportStartDate__c),false,true) && IF(ISNULL(cs.ReportEndDate__c),false,true)&&!(cs.ReportStartDate__c > cs.ReportEndDate__c)}" rerender="main"/>
+           </apex:pageBlockSection>
+           
+                      
+        </apex:pageBlock>
+        
+        
+        
+        <apex:outputpanel id="reportdata" rendered="{!displaydata==true}">
+           <apex:commandButton action="{!generatepdf}" value="Generate PDF Invoice"/> 
+           <br/>
+           <br/>
+           <apex:pageblock >
+            <u><b>CHARGES</b></u>&nbsp;(are in {!displaycurrency}$)
+            <br/>
+            <br/>
+            
+            <i>On-Site Technical Services:</i> 
+            
+            <apex:outputText value="---Junior Consultant: {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!technicalfee1 != 0}">
+              <br/> <apex:param value="{!technicalhr1}"/>
+                    <apex:param value="{!technicalfee1/technicalhr1}"/>
+                    <apex:param value="{!technicalfee1}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="-----------Consultant: : {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!technicalfee2 != 0}">
+              <br/> <apex:param value="{!technicalhr2}"/>
+                    <apex:param value="{!technicalfee2/technicalhr2}"/>
+                    <apex:param value="{!technicalfee2}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="---Senior Consultant: : {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!technicalfee3 != 0}">
+              <br/> <apex:param value="{!technicalhr3}"/>
+                    <apex:param value="{!technicalfee3/technicalhr3}"/>
+                    <apex:param value="{!technicalfee3}"/>
+            </apex:outputText>
+            <br/>
+            <br/>
+            <i>On-Site Training Services:</i> 
+            
+            <apex:outputText value="---Junior Consultant: {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!trainingfee1 != 0}">
+              <br/> <apex:param value="{!traininghr1}"/>
+                    <apex:param value="{!trainingfee1/traininghr1}"/>
+                    <apex:param value="{!trainingfee1}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="-----------Consultant: : {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!trainingfee2 != 0}">
+              <br/> <apex:param value="{!traininghr2}"/>
+                    <apex:param value="{!trainingfee2/traininghr2}"/>
+                    <apex:param value="{!trainingfee2}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="---Senior Consultant: : {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!trainingfee3 != 0}">
+              <br/> <apex:param value="{!traininghr3}"/>
+                    <apex:param value="{!trainingfee3/traininghr3}"/>
+                    <apex:param value="{!trainingfee3}"/>
+            </apex:outputText>
+            <br/>
+            <br/>
+            <i>Office-Based Services:</i> 
+            
+            <apex:outputText value="---Junior Consultant: {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!officefee1 != 0}">
+              <br/> <apex:param value="{!officehr1}"/>
+                    <apex:param value="{!officefee1/officehr1}"/>
+                    <apex:param value="{!officefee1}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="-----------Consultant: : {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!officefee2 != 0}">
+              <br/> <apex:param value="{!officehr2}"/>
+                    <apex:param value="{!officefee2/officehr2}"/>
+                    <apex:param value="{!officefee2}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="---Senior Consultant: : {0} hours @ ${1, number, ##0.00}/hr = ${2, number, ###,###,###,##0.00}" rendered="{!officefee3 != 0}">
+              <br/> <apex:param value="{!officehr3}"/>
+                    <apex:param value="{!officefee3/officehr3}"/>
+                    <apex:param value="{!officefee3}"/>
+            </apex:outputText>
+            <br/>
+            <br/>
+            <i>Travel Costs:</i> 
+            <apex:outputText value="---Junior Consultant: ${0, number, ###,###,###,##0.00}" rendered="{!travelfee1 != 0}">
+              <br/> <apex:param value="{!travelfee1}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="-----------Consultant: : ${0, number, ###,###,###,##0.00}" rendered="{!travelfee2 != 0}">
+              <br/> <apex:param value="{!travelfee2}"/>
+            </apex:outputText>
+            
+            <apex:outputText value="---Senior Consultant: : ${0, number, ###,###,###,##0.00}" rendered="{!travelfee3 != 0}">
+              <br/> <apex:param value="{!travelfee3}"/>
+            </apex:outputText>
+            <br/>
+            <br/>
+            <i>Cumulative Total:</i> 
+            <apex:outputText value=" ${0, number, ###,###,###,##0.00}">
+                <apex:param value="{!grandtotal}"/>
+            </apex:outputText>
+            </apex:pageblock>
+            
+            <apex:pageblock >
+            <u><b>Consultant(s):</b></u>
+            <br/>
+               {!consultantlist}
+            
+            </apex:pageblock>
+            
+            <apex:pageblock >
+            <u><b>Purchase Order(s):</b></u>
+            <br/>
+               {!ponumstring}
+            
+            </apex:pageblock>
+            
+            <apex:pageblock >
+            <u><b>Consulting Description(s):</b></u>
+            <br/>
+            {!consultantdescription}
+            </apex:pageblock>
+            
+    
+    </apex:outputpanel>
+        
+        
+    </apex:form>
+    
+    
+    
+</apex:page>

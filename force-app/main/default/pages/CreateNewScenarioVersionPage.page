@@ -1,0 +1,93 @@
+<apex:page standardController="Quote__c" extensions="CreateNewScenarioVersionExtension">
+    
+    <apex:sectionHeader title="{!$ObjectType.Quote__c.Label}" subTitle="{!IF(recreateVersion, $Label.Reactivate_Scenario_Version, $Label.Create_New_Scenario_Version)}"/>
+    
+    <apex:form id="theForm">
+    <script>
+		function setFocusOnLoad() {}
+    	
+	</script>
+	<apex:messages style="color:red;"/>
+    <apex:pageBlock mode="edit">
+        <apex:pageBlockButtons location="both">
+            <apex:commandButton value="{!$Label.Button_Save}" onclick="this.disabled=true;" action="{!create}" rerender="theForm" status="buttonStatus" />
+            <apex:commandButton value="{!$Label.Button_Cancel}" action="{!cancel}" />
+            &nbsp;&nbsp;<b><apex:actionStatus id="buttonStatus" startText="{!$Label.Operation_In_Progress}" stopText="" /></b>
+        </apex:pageBlockButtons>
+ <!-- 
+        <apex:pageBlockSection title="{!$Label.QGP_Current_Validity_Dates}" columns="2">
+            <apex:outputfield value="{!scenario.Prev_Price_Valid_From__c}"  />
+            <apex:outputfield value="{!scenario.Prev_Price_Valid_To__c}"  />
+        </apex:pageBlockSection>
+-->
+        <apex:pageBlockSection title="{!$Label.QGP_Validity_Dates_Scenario}" columns="2">
+            <apex:inputField value="{!scenario.Quote_Valid_From__c}" />
+            <apex:inputField value="{!scenario.Quote_Valid_To__c}" />
+        </apex:pageBlockSection>
+        <apex:pageBlockSection title="{!$Label.QGP_Validity_Dates_Pricing}" columns="2">
+        	<apex:pageblocksectionitem >
+            <apex:outputlabel value="Current Price Valid From" />
+            <apex:outputfield value="{!scenario.Prev_Price_Valid_From__c}"  />
+            </apex:pageblocksectionitem>
+            <apex:pageblocksectionitem >
+            <apex:outputlabel value="Current Price Valid To" />
+            <apex:outputfield value="{!scenario.Prev_Price_Valid_To__c}"  />
+            </apex:pageblocksectionitem>
+            <apex:inputField value="{!scenario.Price_Valid_From__c}" />
+            <apex:inputField value="{!scenario.Price_Valid_To__c}" />
+        </apex:pageBlockSection>
+        <apex:actionRegion >
+        	<apex:actionFunction name="adjustAllPrices" action="{!AdjustPHL1Prices}" rerender="adjustmentsTable" />
+        	<apex:actionFunction name="adjustAllQuantities" action="{!AdjustPHL1Quantities}" rerender="adjustmentsTable" />
+        	<apex:actionFunction name="adjustEmptyPrices" action="{!AdjustEmptyPHL1Prices}" rerender="adjustmentsTable" />
+        	<apex:actionFunction name="adjustEmptyQuantities" action="{!AdjustEmptyPHL1Quantities}" rerender="adjustmentsTable" />
+	        <apex:pageBlockSection title="{!$Label.Price_Adjustments}" rendered="{!RenderAdjustments}" >
+		        <apex:pageBlockSectionItem >
+		            <apex:outputLabel value="{!$Label.Adjust_Scenario_Price}" />
+		            <apex:outputPanel >
+			            <apex:inputText value="{!Adjustments.PriceAdjustment}" onchange="PriceChanged();" />
+			            <script type="text/javascript" language="javascript">
+							function PriceChanged() {
+								if (confirm('Do you want to roll down the price to all PHL1s ?'))
+									adjustAllPrices();
+								else
+									adjustEmptyPrices();
+							}
+		            	</script>
+		            </apex:outputPanel>
+		        </apex:pageBlockSectionItem>
+		        <apex:pageBlockSectionItem >
+		            <apex:outputLabel value="{!$Label.Adjust_Scenario_Quantity}" />
+		            <apex:outputPanel >
+			            <apex:inputText value="{!Adjustments.QuantityAdjustment}" onchange="QuantityChanged();" />
+			            <script type="text/javascript" language="javascript">
+							function QuantityChanged() {
+								if (confirm('Do you want to roll down the quantity to all PHL1s ?'))
+									adjustAllQuantities();
+								else
+									adjustEmptyQuantities();
+							}
+		            	</script>
+		            </apex:outputPanel>
+		        </apex:pageBlockSectionItem>
+		    </apex:pageBlockSection>
+		    <apex:pageBlockSection columns="1" id="adjustmentsTable" rendered="{!RenderAdjustments}" >
+		        <apex:pageBlockSectionItem >
+		            <apex:pageBlockTable value="{!Adjustments.Adjustments}" var="adjustment">
+		                <apex:column headerValue="PHL1">
+		                	{!adjustment.PHL1}
+		                </apex:column>
+		                <apex:column headerValue="{!$Label.Adjust_Scenario_Price}">
+		                	<apex:inputText value="{!adjustment.PriceAdjustment}" />
+		                </apex:column>
+		                <apex:column headerValue="{!$Label.Adjust_Scenario_Quantity}">
+		                	<apex:inputText value="{!adjustment.QuantityAdjustment}" />
+		                </apex:column>
+		            </apex:pageBlockTable>
+		        </apex:pageBlockSectionItem>
+		        <apex:messages />
+		    </apex:pageBlockSection>
+		</apex:actionRegion>
+    </apex:pageBlock>
+    </apex:form>
+</apex:page>

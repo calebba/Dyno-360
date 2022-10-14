@@ -1,0 +1,101 @@
+<apex:page controller="TransferPricing">
+    <apex:form >
+    
+        <apex:pageBlock title="Transfer Pricing Data Management Criteria">
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    Transfer Pricing Accounts:
+                    <apex:selectList value="{!SelectedTPAs}" size="5" multiselect="true">
+                        <apex:selectOptions value="{!TPAs}" />
+                    </apex:selectList> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    Pricelist: 
+                    <apex:selectList value="{!SelectedPB}" size="1">
+                        <apex:selectOptions value="{!PBs}" />
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    From Date:
+                    <apex:inputField value="{!dummyTD.Valid_From__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem > 
+                    To Date:
+                    <apex:inputField value="{!dummyTD.Valid_To__c}" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockButtons location="bottom"> 
+                <apex:commandButton value="Generate Data" action="{!Generate}" />
+                <apex:commandButton value="Review Data" action="{!Review}" rerender="ReviewPanel" />
+                <apex:outputPanel id="ReviewPanel">
+                    <apex:outputPanel rendered="{!RedirectToReview}">
+                        <script type="text/javascript">
+                            window.open('{!ReviewLink}', '_blank');
+                        </script>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:commandButton value="Publish To SAP" action="{!Publish}" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+        <apex:messages />
+        
+        <apex:pageBlock title="Results" rendered="{!Generated}">
+            <apex:pageBlockSection columns="1">
+                <apex:pageblockSectionItem >
+                    <apex:outputPanel >
+                        The batch has started. An email will be sent to your email address when it's ready.
+                    </apex:outputPanel>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSection>
+            <!-- 
+            <apex:pageBlockSection columns="1">
+                <apex:pageblockSectionItem >
+                    <apex:outputPanel >
+                        {!RecordsCreated} records were successfuly created.
+                        <br />
+                        {!RecordsUpdated} records were successfuly updated.
+                    </apex:outputPanel>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" rendered="{!HasErrors}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputPanel >
+                        The following Products / Transfer Pricing Account don't have discounts.
+                        <apex:pageBlockTable value="{!ErrorElements}" var="ErrorElement">
+                            <apex:column headerValue="Product">
+                                <a href="/{!ErrorElement.Product.Id}">{!ErrorElement.Product.ProductCode}</a>
+                            </apex:column>
+                            <apex:column headerValue="Transfer Pricing Account">
+                                <a href="/{!ErrorElement.TPA.Id}">{!ErrorElement.TPA.Name}</a>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+             -->
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="ReviewError" rendered="{!ReviewError}">
+            <apex:pageBlockSection columns="1">
+                <apex:pageblockSectionItem >
+                    <apex:outputPanel >
+                        Error sending the report.
+                    </apex:outputPanel>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="Results" rendered="{!Published}">
+            <apex:pageBlockSection columns="1">
+                <apex:pageblockSectionItem >
+                    <apex:outputPanel >
+                        {!RecordsPublished} records were marked as "Ready To Transfer" to SAP.
+                    </apex:outputPanel>
+                </apex:pageblockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+    </apex:form>
+</apex:page>

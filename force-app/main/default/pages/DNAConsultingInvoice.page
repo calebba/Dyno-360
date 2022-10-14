@@ -1,0 +1,501 @@
+<apex:page controller="DNAConsultPageController" showHeader="false" renderAs="pdf">
+    <head>
+         <style type="text/css">
+          @page
+      {
+
+        <!-- Landscape orientation -->
+        <!-- size:landscape; -->
+
+        <!-- Put page numbers in the bottom right corner of each 
+        page in the pdf document. -->
+        @bottom-right {
+          content: "Page " counter(page);
+        }
+      }
+
+      body {
+       font-family: Arial Unicode MS;
+       font-size:9pt;
+      }
+
+
+      td {
+        font-size:11pt;
+        font-family:Tahoma;
+      }
+
+      <!-- you can even define custom classes that utilize your static resources 
+      .checkbox
+      {
+         width: 19px;
+         height: 16px;
+         background-image:url({!URLFOR($Resource.Checkbox)});
+         background-repeat: no-repeat;
+      }  
+      -->
+      </style>
+    </head>
+    <body>
+    <div>       <table width="720" border="0" cellpadding="3" cellspacing="0">
+            <tbody>
+                <tr>
+                    <td>
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr >
+                    <td align="left" valign="middle">
+                        <table width="720" border="0" cellpadding="2" cellspacing="1" style="color:black;">
+                            <tbody>
+                                <tr><td colspan="7">
+                                <apex:image style="padding-top:5px;" url="{!URLFOR($Resource.BlueTransparentLogo)}" />
+                                </td></tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td width="300" colspan="3">
+                                        <strong>{!Accountname.Name}</strong>
+                                    </td>
+                                    <td width="300" colspan="3" align="right">
+                                        
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="3">
+                                        Account #: {!Shipto} 
+                                    </td>
+                                    <td align="right" colspan="3">
+                                        Invoice date: {!todaydatestring}
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="3">
+                                        Parent Account #: {!Accountname.Parent.SAP_Account_Number__c}
+                                    </td>
+                                    <td align="right" colspan="4">
+                                        Purchase Order(s): {!ponumstring}
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="3">
+                                        &nbsp;
+                                    </td>
+                                    <td align="right" colspan="2"></td>
+                                </tr>
+                                                               
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="4">
+                                        <b>Invoice Period:</b> {!startdatestring} to {!enddatestring}
+                                    </td>
+                                
+                                    <td colspan="3">
+                                        NOTE:  All Currencies below are in {!displaycurrency}$
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="3">
+                                        &nbsp;
+                                    </td>
+                                    <td align="right" colspan="1">
+                                        
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                     
+                                    </td>
+                                </tr>
+                                
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="2">
+                                        <b><u>ACTIVITY</u></b>
+                                    </td>
+                                    <td colspan="1">
+                                        <b><u>LEVEL</u></b>
+                                    </td>
+                                    <td colspan="1">
+                                        <b><u>HOURS</u></b>
+                                    </td>
+                                    <td colspan="1">
+                                        <b><u>RATE ($/hr)</u></b>
+                                    </td>
+                                    <td colspan="2">
+                                        <b><u>TOTAL $</u></b>
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FF0000" style="">
+                                    <td colspan="2">
+                                        OS Technical Services
+                                    </td>
+                                    <td colspan="1">
+                                        Senior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!technicalfee3 != 0}">
+                                            <apex:param value="{!technicalhr3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!technicalfee3 != 0}">
+                                            <apex:param value="{!technicalfee3/technicalhr3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!technicalfee3 != 0}">
+                                            <apex:param value="{!technicalfee3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                <tr bgcolor="#FF0000" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!technicalfee2 != 0}">
+                                            <apex:param value="{!technicalhr2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!technicalfee2 != 0}">
+                                            <apex:param value="{!technicalfee2/technicalhr2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!technicalfee2 != 0}">
+                                            <apex:param value="{!technicalfee2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#FF0000" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Junior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!technicalfee1 != 0}">
+                                            <apex:param value="{!technicalhr1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!technicalfee1 != 0}">
+                                            <apex:param value="{!technicalfee1/technicalhr1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!technicalfee1 != 0}">
+                                            <apex:param value="{!technicalfee1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        OS Training Services
+                                    </td>
+                                    <td colspan="1">
+                                        Senior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!trainingfee3 != 0}">
+                                            <apex:param value="{!traininghr3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!trainingfee3 != 0}">
+                                            <apex:param value="{!trainingfee3/traininghr3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!trainingfee3 != 0}">
+                                            <apex:param value="{!trainingfee3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!trainingfee2 != 0}">
+                                            <apex:param value="{!traininghr2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!trainingfee2 != 0}">
+                                            <apex:param value="{!trainingfee2/traininghr2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!trainingfee2 != 0}">
+                                            <apex:param value="{!trainingfee2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Junior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!trainingfee1 != 0}">
+                                            <apex:param value="{!traininghr1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!trainingfee1 != 0}">
+                                            <apex:param value="{!trainingfee1/traininghr1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!trainingfee1 != 0}">
+                                            <apex:param value="{!trainingfee1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        Office-Based Services
+                                    </td>
+                                    <td colspan="1">
+                                        Senior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!officefee3 != 0}">
+                                            <apex:param value="{!officehr3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!officefee3 != 0}">
+                                            <apex:param value="{!officefee3/officehr3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!officefee3 != 0}">
+                                            <apex:param value="{!officefee3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!officefee2 != 0}">
+                                            <apex:param value="{!officehr2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!officefee2 != 0}">
+                                            <apex:param value="{!officefee2/officehr2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!officefee2 != 0}">
+                                            <apex:param value="{!officefee2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Junior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" {0, number, ###,###,###,##0.00}" rendered="{!officefee1 != 0}">
+                                            <apex:param value="{!officehr1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="1">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!officefee1 != 0}">
+                                            <apex:param value="{!officefee1/officehr1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!officefee1 != 0}">
+                                            <apex:param value="{!officefee1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        Travel Costs
+                                    </td>
+                                    <td colspan="1">
+                                        Senior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!travelfee3 != 0}">
+                                            <apex:param value="{!travelfee3}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                               <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!travelfee2 != 0}">
+                                            <apex:param value="{!travelfee2}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        Junior Consultant
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!travelfee1 != 0}">
+                                            <apex:param value="{!travelfee1}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        Cumulative Total
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="1">
+                                        
+                                    </td>
+                                    <td colspan="2">
+                                        <apex:outputText value=" ${0, number, ###,###,###,##0.00}" rendered="{!grandtotal != 0}">
+                                            <apex:param value="{!grandtotal}"/>
+                                        </apex:outputText>
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        <b>CONSULTANTS:</b>
+                                    </td>
+                                    <td colspan="5">
+                                        <apex:outputText value="{!consultantlist}" />
+                                    </td>
+                                   
+                                </tr>
+                                <tr bgcolor="#FFBF00">
+                                    <td colspan="7">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                                <tr bgcolor="#999999" style="">
+                                    <td colspan="2">
+                                        <b>WORK DESCRIPTION:</b>
+                                    </td>
+                                    <td colspan="5">
+                                        <apex:outputText value="{!consultantdescription}"/>
+                                    </td>
+                                   
+                                </tr>
+                                
+                                
+                                
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table></div>
+    
+    </body>
+</apex:page>

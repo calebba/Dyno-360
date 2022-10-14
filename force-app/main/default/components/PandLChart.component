@@ -1,0 +1,20 @@
+<apex:component >
+	<apex:attribute name="quote" type="Quote__c" required="true" description="Quote Data" />
+	<apex:attribute name="taic" type="Double" required="true" description="EBIT Percentage" />
+	<apex:attribute name="CMP" type="Double" required="true" description="Contribution Margin Percentage" />
+	<apex:pageBlockSection title="Profit and Loss" collapsible="false" columns="3">
+		<apex:pageBlockSectionItem labelStyle="width:10%;text-align:middle;" dataStyle="{!IF(quote.GM_Percentage__c<=10,'color:red',IF(quote.GM_Percentage__c<=20, 'color:#FFCC00', 'color:black'))}">
+			<apex:outputLabel value="{!$Label.PandLPDF_GMP}" for="GM_p"/>	
+			<apex:outputField id="GM_p" value="{!quote.GM_Percentage__c}" />
+		</apex:pageBlockSectionItem>
+		<apex:pageBlockSectionItem labelStyle="width:15%;text-align:middle;" dataStyle="{!IF(CMP<=10,'color:red',IF(CMP<=20, 'color:#FFCC00', 'color:black'))}">
+			<apex:outputLabel value="{!$Label.PandLPDF_CMP}" for="CM_p"/>
+			<apex:outputLabel id="CM_p" value="{!TEXT(ROUND(CMP,2)) &'%'}" />
+		</apex:pageBlockSectionItem>
+		<apex:pageBlockSectionItem labelStyle="width:10%;text-align:middle;" dataStyle="{!IF(taic<=10,'color:red',IF(taic<=20, 'color:#FFCC00', 'color:black'))}">
+			<apex:outputLabel value="{!$Label.PandLPDF_EBITP}" for="Ebit_p"/>
+			<apex:outputLabel id="Ebit_p" value="{!TEXT(ROUND(taic,2)) &'%'}" />
+		</apex:pageBlockSectionItem>
+	</apex:pageBlockSection>
+	
+</apex:component>

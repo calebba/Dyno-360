@@ -1,0 +1,176 @@
+<apex:page controller="QuoteServiceDetailsController" language="{!currentLanguage}" renderAs="pdf" showHeader="false">
+    <apex:stylesheet value="{!URLFOR($Resource.Assets, 'assets/css/QuoteOutputPDF.css')}" />
+    <!-- START HEADER -->
+    <head>
+    <style type="text/css">
+    .largeFont {
+        font-size:150%;
+    }
+    .extraLargeFont {
+        font-size:160%;
+    }
+    .leftAlign {
+    	float:left;
+    }
+    .rightAlign {
+    	float:right;
+    }
+    </style>
+    </head>
+    <div class="header">
+        <table class="typeOne">
+            <tr>
+                <td align="center" colspan="5" class="typeOne">
+                    <div style="font-size:200%;" class="typeTwo">{!record.Customer__r.Name}</div>
+                    <div class="typeThree">{!$Label.QSDPDF_PSRE}</div>
+                    <div class="typeFour">{!YEAR(TODAY())}</div>
+                </td>
+                <td align="right" colspan="2" class="typeTwo">
+                    <apex:image url="{!URLFOR($Resource.Assets, 'assets/img/Dynologo.jpg')}" />
+                </td>
+            </tr>
+            <tr>
+                <td align="center" width="16%" class="typeThree">
+                    <div>{!$Label.PandLPDF_Region}</div>
+                    <div class="typeNine">{!record.Sales_Organization_Primary__r.Company_Site__r.Name}</div>
+                </td>
+                <td align="center" width="16%" class="typeThree">
+                    <div>{!$Label.PandLPDF_Site}</div>
+                    <div class="typeNine">{!record.Sales_Organization_Primary__r.Name}</div>
+                </td>
+                <td align="center" width="16%" class="typeThree">
+                    <div>{!$Label.PandLPDF_Currency}</div>
+                    <div class="typeNine">{!record.Customer__r.CurrencyIsoCode}</div>
+                </td>
+                <td align="center" width="20%" class="typeThree">
+                    <div>{!$Label.PandLPDF_CNum}</div>
+                    <div class="typeNine">{!record.Customer__r.SAP_Account_Number__c}</div>
+                </td>
+                 <td align="center" width="16%" class="typeThree">
+                    <div>{!$Label.QSD_Date}</div>
+                    <div class="typeNine">{!DAY(TODAY())}-{!MONTH(TODAY())}-{!YEAR(TODAY())}</div>
+                </td>  
+                <td align="center" width="16%" class="typeThree">
+                    <div>{!$Label.QSDPDF_ProposalNo}</div>
+                    <div class="typeNine">{!record.Name}</div>
+                </td>
+                                                
+            </tr>   
+        </table>
+    </div>
+    <!-- END HEADER --> 
+    
+    <!-- START CONTENT -->
+    <div id="revenue" class="typeFive" class="typeOne">
+        <table class="typeTwo">
+            <tr>
+                <td colspan="5" style="font-size:150%;" class="typeFour" width="99%" align="center"><div class="typeNine">{!$Label.QSDPDF_RevEst}</div></td>
+            </tr>
+            <tr style="padding-top:3px;">
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, largeFont" width="19.8%" align="left">{!$Label.QSDPDF_Desc}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, largeFont" width="19.8%" align="right">{!$Label.QSDPDF_Total}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+            </tr>
+            
+            <tr>
+                <td width="99%" colspan="5" align="center" class="typeEight"><hr class="setWidth" size="3" color="black" /></td>
+            </tr>   
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="left">{!$Label.QSDPDF_TNR}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="right"><c:Currency currency="{!quoteAmount}" paddedValues="0" conversionCheck="true"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+            </tr>                                                                               
+        </table>
+    </div>
+    <br />
+    <div id="directlabor" class="typeOne">
+        <table class="typeTwo">
+            <tr>
+                <td colspan="5" style="font-size:150%;" class="typeFour" width="99%" align="center"><div class="typeNine">{!$Label.QSDPDF_DLE}</div></td>
+            </tr>
+            <tr style="padding-top:3px;">
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, largeFont" width="19.8%" align="left">{!$Label.QSDPDF_Desc}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, largeFont" width="19.8%" align="right">{!$Label.QSDPDF_Total}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+            </tr>
+            <tr>
+                <td width="99%" colspan="5" align="center" class="typeEight"><hr class="setWidth" size="3" color="black" /></td>
+            </tr>   
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="left">{!$Label.QSDPDF_DH}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="right"><c:Currency currency="{!delHrs}" paddedValues="1" conversionCheck="false"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>            
+            </tr>
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="left">{!$Label.QSDPDF_SH}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="right"><c:Currency currency="{!ssHrs}" paddedValues="1" conversionCheck="false"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>                 
+            </tr>
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="left">{!$Label.QSDPDF_TDH}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="right"><c:Currency currency="{!totalHrs}" paddedValues="1" conversionCheck="false"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>              
+            </tr>                                                                                           
+        </table>
+    </div>
+    <br /><br /><br />
+    <div id="other" class="typeOne">
+        <table class="typeTwo">
+            <tr>
+                <td colspan="5" style="font-size:150%;" class="typeFour" width="99%" align="center"><div class="typeNine">{!$Label.QSDPDF_OSRE}</div></td>
+            </tr>
+            <tr style="padding-top:3px;">
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, largeFont" width="29.8%" align="left">{!$Label.QSDPDF_Desc}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="9.8%" align="center"></td>
+                <td colspan="1" class="noBorder, largeFont" width="19.3%" align="right">{!$Label.QSDPDF_Total}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="20.3%" align="center"></td>
+            </tr>
+            <tr>
+                <td width="99%" colspan="5" align="center" class="typeEight"><hr class="setWidth" size="3" color="black" /></td>
+            </tr>   
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="29.8%" align="left">{!$Label.QSDPDF_TRTM}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="9.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.3%" align="right"><c:Currency currency="{!roundTripTruckDistance}" paddedValues="1" conversionCheck="false"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="20.3%" align="center"></td>             
+            </tr>
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="29.8%" align="left">{!$Label.QSDPDF_QEDB}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="9.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.3%" align="right"><c:Currency currency="{!qEDB}" paddedValues="1" conversionCheck="false"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="20.3%" align="center"></td>             
+            </tr>
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="29.8%" align="left">{!$Label.QSDPDF_TI}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="9.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.3%" align="right"><c:Currency currency="{!totalInvoices}" paddedValues="1" conversionCheck="false"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="20.3%" align="center"></td>                  
+            </tr>
+            <tr>
+            	<td colspan="1" class="noBorder, extraLargeFont" width="19.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="29.8%" align="left">{!$Label.QSDPDF_TNR}</td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="9.8%" align="center"></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="19.3%" align="right"><c:Currency currency="{!quoteAmount}" paddedValues="0" conversionCheck="true"/></td>
+                <td colspan="1" class="noBorder, extraLargeFont" width="20.3%" align="center"></td>                       
+            </tr>                                                                                           
+        </table>
+    </div>
+    
+    <!-- END CONTENT -->
+</apex:page>

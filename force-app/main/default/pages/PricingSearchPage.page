@@ -1,0 +1,215 @@
+<apex:page controller="PricingSearchController">
+	<apex:form >
+		<apex:pageBlock id="searchBlock" title="{!$Label.Parent_Page_Block}">	
+			<apex:pageBlockButtons >
+				<apex:commandButton status="searchStatus" rerender="resultsDiv, errors" action="{!searchRecords}" value="{!$Label.Search}"/>
+				<apex:actionStatus startText="{!$Label.Search_Status_Text}" id="searchStatus"/>
+			</apex:pageBlockButtons>
+			
+			<apex:pageBlockSection title="{!$Label.Parent_Page_Block_Section}" columns="2" collapsible="false"> 
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Material_Item__c.label}"  />
+					<apex:inputField value="{!dummyPr.Material_Item__c}"/>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Material_Item__c.fields.PHL1__c.label}"  />
+					<apex:selectList value="{!selectedPHL1}" size="1">
+						<apex:selectOptions value="{!phl1Options}" />
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection title="{!$Label.Customer_Characteristics}" columns="2" collapsible="false">
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Account__c.label}"  />				
+					<apex:inputField value="{!dummyPr.Account__c}">
+						<apex:actionSupport event="onblur" rerender="cssSection" />
+					</apex:inputField>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Account.fields.ParentId.label}"/>
+					<apex:inputField value="{!dummyAccountObject.ParentId}" />				
+				</apex:pageBlockSectionItem>			
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Region_Site__c.label}"  />
+					<apex:selectList id="reselect" value="{!dummyPr.Region_Site__c}" multiselect="false" size="1">
+						<apex:selectOptions value="{!regions}"/>
+					</apex:selectList>
+				</apex:pageBlockSectionItem>				
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Customer_Group__c.label}"  />
+					<apex:inputField value="{!dummyPr.Customer_Group__c}" />
+				</apex:pageBlockSectionItem>			
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Account.fields.On_Contract__c.label}"/>
+					<apex:inputField value="{!dummyAccountObject.On_Contract__c}" />				
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Company_Code__c.label}"/>
+					<apex:inputField value="{!dummyPr.Company_Code__c}" />				
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection title="{!$Label.PSP_CSS}" columns="2" collapsible="false" id="cssSection">
+				<apex:outputLabel value="{!$Label.PSP_Select_A_customer}" rendered="{!ISNULL(dummyPr.Account__c)}"/>
+				<apex:pageBlockSectionItem rendered="{!NOT(ISNULL(dummyPr.Account__c))}">
+					<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Receiving_Sales_Site__c.label}" />
+					<apex:selectList value="{!siteChoice}" multiselect="false" size="1">
+						<apex:selectOptions value="{!customerSites}"/>
+					</apex:selectList>
+					
+				</apex:pageBlockSectionItem>	
+							
+				<apex:pageBlockSectionItem rendered="{!NOT(ISNULL(dummyPr.Account__c))}">
+					<apex:outputLabel value="{!$ObjectType.Account.fields.Account_Manager__c.label}"/>
+					<apex:inputField value="{!dummyAccountObject.Account_Manager__c}" />				
+				</apex:pageBlockSectionItem>
+				  
+				<apex:pageBlockSectionItem rendered="{!NOT(ISNULL(dummyPr.Account__c))}">
+					<apex:outputLabel value="{!$ObjectType.Customer_Sales_Site__c.fields.Channel__c.label}"/>
+					<apex:inputField value="{!dummyCSS.Channel__c}" />				
+				</apex:pageBlockSectionItem>																						
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+		
+		<apex:pageBlock id="resultsBlock" title="{!$Label.Search_Results}">
+		
+			<apex:pageBlockButtons >
+				<apex:commandButton rerender="editpanel, resultsDiv" action="{!clearSearchResults}" value="{!$Label.Clear_Search_Results}"/>
+				<apex:commandButton status="modifyStatus" rerender="editpanel, resultsDiv, errors" action="{!saveEdits}" value="{!$Label.Save_Edits}"/>
+			</apex:pageBlockButtons>
+			
+			<apex:pageMessages showDetail="false" id="errors"/>
+			<apex:actionStatus startText="{!$Label.Modify_Status}" id="modifyStatus"/><br/>
+			
+			<!--  <apex:actionRegion renderRegionOnly="true">-->
+			<apex:outputPanel id="editpanel">
+				<!--  <apex:repeat value="{!editFields}" var="eField"> -->
+				
+					<apex:outputLabel for="modifyinput">{!item1.modifyFieldName}:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputLabel>
+					<apex:inputText id="modifyinput" value="{!item1.modifyFieldValue}"/>
+					<apex:inputCheckbox value="{!item1.percentChange}">
+						<apex:actionSupport event="onchange" rerender="editpanel" />
+					</apex:inputCheckbox>{!$Label.Percent}&nbsp;of&nbsp;&nbsp;
+					<apex:selectList value="{!item1.percentOf}" rendered="{!item1.percentChange}" size="1">
+						<apex:selectOption itemValue="Target_Price__c" itemLabel="{!$ObjectType.Quote_Line_Item__c.fields.Target_Price__c.label}" />
+						<apex:selectOption itemValue="Floor_Price__c" itemLabel="{!$ObjectType.Quote_Line_Item__c.fields.Floor_Price__c.label}" />
+						<apex:selectOption itemValue="Avg_Sell_Price__c" itemLabel="{!$ObjectType.Quote_Line_Item__c.fields.Avg_Sell_Price__c.label}" />
+					</apex:selectList>
+					<apex:outputText style="margin-right:10px;color:red;" value="{!item1.errorMessage}"/>
+					
+					<br />
+
+					<apex:outputLabel for="modifyinput2">{!item2.modifyFieldName}:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</apex:outputLabel>
+					<apex:inputText id="modifyinput2" value="{!item2.modifyFieldValue}"/>
+					<apex:inputCheckbox value="{!item2.percentChange}">
+						<apex:actionSupport event="onchange" rerender="editpanel" />
+					</apex:inputCheckbox>{!$Label.Percent}&nbsp;of&nbsp;&nbsp;
+					<apex:selectList value="{!item2.percentOf}" rendered="{!item2.percentChange}" size="1">
+						<apex:selectOption itemValue="Target_Price__c" itemLabel="{!$ObjectType.Quote_Line_Item__c.fields.Target_Price__c.label}" />
+						<apex:selectOption itemValue="Floor_Price__c" itemLabel="{!$ObjectType.Quote_Line_Item__c.fields.Floor_Price__c.label}" />
+						<apex:selectOption itemValue="Avg_Sell_Price__c" itemLabel="{!$ObjectType.Quote_Line_Item__c.fields.Avg_Sell_Price__c.label}" />
+					</apex:selectList>
+					<apex:outputText style="margin-right:10px;color:red;" value="{!item2.errorMessage}"/>					
+					
+					<br />
+				<!--  </apex:repeat> -->
+ 				<apex:outputLabel for="dateinput">{!$Label.Price_Valid_From}:&nbsp;&nbsp;</apex:outputLabel>
+				<apex:inputField id="dateinput" value="{!dummyPr.Price_Valid_From__c}" required="false"/><br />
+				<apex:commandButton value="See Price Change" action="{!determineNewTargetAndFloor}" rerender="resultsDiv" status="calculatingPriceChange" />
+				<apex:actionStatus id="calculatingPriceChange" startText="{!$Label.PSP_Calculate_Price}" />
+			</apex:outputPanel>
+			<!--  </apex:actionRegion>-->
+			
+			<br /><br />
+			<apex:actionFunction name="selectAllRecords" action="{!selectAllRecords}" rerender="resultsDiv" status="selectstatus"/>
+			<apex:actionRegion renderRegionOnly="true">
+			<apex:outputPanel id="resultsDiv"	>
+			<div style="height:500px;overflow:auto;">
+				<apex:outputLabel rendered="{!NOT(areResults)}" value="{!$Label.RL_No_Records}" />
+				<apex:pageBlockTable id="resultsTable" value="{!resultSetRecords}" var="pRecord" columns="14" rendered="{!areResults}"><!-- rowClasses="odd,even"  border="1" cellpadding="5px" cellspacing="5px"  -->
+					<apex:column >
+						<apex:facet name="header">
+							<apex:outputpanel >
+								<apex:actionStatus id="selectstatus" stopText="{!$Label.Select_All}" startText="{!$Label.Selecting}"/>
+								<apex:inputCheckbox onclick="selectAllRecords();" value="{!selectAll}" />
+							</apex:outputpanel>
+						</apex:facet>
+						<apex:inputCheckbox value="{!pRecord.selectForSaving}">
+							<apex:actionSupport event="onclick" rerender="col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13" />
+						</apex:inputCheckbox>
+					</apex:column>
+					
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Name.label}">
+						<apex:outputPanel id="col1" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Name}" />
+						</apex:outputPanel>
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Target_Price__c.label}">
+						<apex:outputPanel id="col2" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Target_Price__c}" />
+						</apex:outputPanel>
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Floor_Price__c.label}">
+						<apex:outputPanel id="col3" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Floor_Price__c}" />
+						</apex:outputPanel>
+					</apex:column>
+					<apex:column headerValue="{!$Label.PC_Avg_Sales}">
+						<apex:outputPanel id="col4" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<c:AdjustCurrencyComponent CurrencyType="{!pRecord.currencyType}" ConversionValue="{!pRecord.averageSalesPrice}" />
+						</apex:outputPanel>					
+					</apex:column>
+					<apex:column headerValue="{!$Label.PC_Avg_Cost}">
+						<apex:outputPanel id="col5" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<c:AdjustCurrencyComponent CurrencyType="{!pRecord.currencyType}" ConversionValue="{!pRecord.averageCost}" />
+						</apex:outputPanel>						
+					</apex:column>
+					<apex:column headerValue="{!$Label.PC_New} {!$ObjectType.Pricing_Rule__c.fields.Target_Price__c.label}">
+						<apex:outputPanel id="col6" style="background-color:{!IF(AND(pRecord.selectForSaving, 10 > pRecord.targetGmp),'red',IF(AND(pRecord.selectForSaving, 20 > pRecord.targetGmp, pRecord.targetGmp >= 10),'yellow',IF(AND(pRecord.selectForSaving, pRecord.targetGmp >= 20),'#FFE4B5','#FFFFFF')))}">
+							<c:AdjustCurrencyComponent CurrencyType="{!pRecord.currencyType}" ConversionValue="{!pRecord.newTarget}" />						
+						</apex:outputPanel>						
+					</apex:column>
+					<apex:column headerValue="{!$Label.PC_New} {!$ObjectType.Pricing_Rule__c.fields.Floor_Price__c.label}">
+						<apex:outputPanel id="col7" style="background-color:{!IF(AND(pRecord.selectForSaving, 10 > pRecord.targetGmp),'red',IF(AND(pRecord.selectForSaving, 20 > pRecord.targetGmp, pRecord.targetGmp >= 10),'yellow',IF(AND(pRecord.selectForSaving, pRecord.targetGmp >= 20),'#FFE4B5','#FFFFFF')))}">
+							<c:AdjustCurrencyComponent CurrencyType="{!pRecord.currencyType}" ConversionValue="{!pRecord.newFloor}" />
+						</apex:outputPanel>						
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Per__c.label}">
+						<apex:outputPanel id="col8" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Per__c}" />
+						</apex:outputPanel>					
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.UoM__c.label}">
+						<apex:outputPanel id="col9" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.UoM__c}" />
+						</apex:outputPanel>					
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Price_Valid_From__c.label}">
+						<apex:outputPanel id="col10" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Price_Valid_From__c}" />
+						</apex:outputPanel>					
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Price_Valid_To__c.label}">
+						<apex:outputPanel id="col11" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Price_Valid_To__c}" />
+						</apex:outputPanel>					
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Material_Item__c.label}">
+						<apex:outputPanel id="col12" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Material_Item__c}" />
+						</apex:outputPanel>					
+					</apex:column>	
+					<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Region_Site__c.label}">
+						<apex:outputPanel id="col13" style="background-color:{!IF(pRecord.selectForSaving, '#FFE4B5','#FFFFFF')}">
+							<apex:outputField value="{!pRecord.prRecord.Region_Site__c}" />
+						</apex:outputPanel>					
+					</apex:column>						
+
+				</apex:pageBlockTable>
+			</div>
+			</apex:outputPanel>
+			</apex:actionRegion>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

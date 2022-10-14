@@ -1,0 +1,67 @@
+<apex:page controller="CustomerSearchController">
+	<apex:form >
+		<apex:pageBlock mode="edit" title="{!$Label.Customer_Search}">
+			<apex:pageMessages id="errors" />
+			<apex:pageBlockSection columns="2" title="{!$Label.PriceRuleSearchPage_Search_Criteria}" collapsible="false">
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$ObjectType.Account.fields.Name.label} / {!$ObjectType.Account.fields.SAP_Account_Number__c.label}:" />
+					<apex:inputText value="{!searchString}" />
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem >
+					<apex:actionStatus id="theStatus" startText="{!$Label.Edit_Status_Start}" stopText="" />
+					<apex:commandButton value="{!$Label.PricingRuleSearchButtonSearch}" action="{!searchCustomers}" rerender="resultTable, errors" status="theStatus" />
+				</apex:pageBlockSectionItem>				
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$Label.Sort_By}:" />
+					<apex:selectList value="{!sortOrder}" size="1">
+						<apex:selectOption itemValue="Name" itemLabel="{!$ObjectType.Account.fields.Name.label}" />
+						<apex:selectOption itemValue="ShippingCity" itemLabel="{!$ObjectType.Account.fields.ShippingCity.label}" />
+						<apex:selectOption itemValue="ShippingState" itemLabel="{!$ObjectType.Account.fields.ShippingState.label}" />
+						<apex:selectOption itemValue="SAP_Account_Number__c" itemLabel="{!$ObjectType.Account.fields.SAP_Account_Number__c.label}" />
+						<apex:selectOption itemValue="Account_Group__c" itemLabel="{!$ObjectType.Account.fields.Account_Group__c.label}" />
+						<apex:selectOption itemValue="Parent.Name" itemLabel="{!$ObjectType.Account.fields.ParentId.label}" />
+						<apex:selectOption itemValue="SAPParentID__c" itemLabel="{!$ObjectType.Account.fields.SAPParentID__c.label}" />
+						<apex:selectOption itemValue="RecordType.Name" itemLabel="{!$ObjectType.Account.fields.RecordTypeId.label}" />
+						<apex:selectOption itemValue="Owner.Name" itemLabel="{!$ObjectType.Account.fields.OwnerId.label}" />
+						<apex:selectOption itemValue="Account_Manager__c" itemLabel="{!$ObjectType.Account.fields.Account_Manager__c.label}" />
+						<apex:selectOption itemValue="Sales_Manager__c" itemLabel="{!$ObjectType.Account.fields.Sales_Manager__c.label}" />
+						<apex:selectOption itemValue="Valid_Sites__c" itemLabel="{!$ObjectType.Account.fields.Valid_Sites__c.label}" />
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$Label.Sort_Order}:" />
+					<apex:selectList value="{!sortType}" size="1">
+						<apex:selectOption itemValue="asc" itemLabel="Ascending" />
+						<apex:selectOption itemValue="desc" itemLabel="Descending" />
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+				<apex:pageBlockSectionItem />
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="{!$Label.Include_Blanks}:" />
+					<apex:inputCheckbox value="{!includeNulls}" />
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			
+			<apex:pageBlockSection columns="1" title="{!$Label.Search_Results}" collapsible="false">
+				<apex:pageBlockTable value="{!customerList}" var="cust" id="resultTable">
+					<apex:column headerValue="{!$ObjectType.Account.fields.Name.label}">
+						<apex:outputLink value="/{!cust.Id}">{!cust.Name}</apex:outputLink>
+					</apex:column>
+					<apex:column value="{!cust.ShippingCity}" headerValue="{!$ObjectType.Account.fields.ShippingCity.label}" />
+					<apex:column value="{!cust.ShippingState}" headerValue="{!$ObjectType.Account.fields.ShippingState.label}" />
+					<apex:column value="{!cust.SAP_Account_Number__c}" headerValue="{!$ObjectType.Account.fields.SAP_Account_Number__c.label}" />
+					<apex:column value="{!cust.Account_Group__c}" headerValue="{!$ObjectType.Account.fields.Account_Group__c.label}" />
+					<apex:column value="{!cust.ParentId}" headerValue="{!$ObjectType.Account.fields.ParentId.label}" />
+					<apex:column value="{!cust.SAPParentID__c}" headerValue="{!$ObjectType.Account.fields.SAPParentID__c.label}" />
+					<apex:column value="{!cust.RecordType.Name}" headerValue="{!$ObjectType.Account.fields.RecordTypeId.label}" />
+					<apex:column value="{!cust.Owner.Name}" headerValue="{!$ObjectType.Account.fields.OwnerId.label}" />
+					<apex:column value="{!cust.Account_Manager__c}" headerValue="{!$ObjectType.Account.fields.Account_Manager__c.label}" />
+					<apex:column value="{!cust.Sales_Manager__c}" headerValue="{!$ObjectType.Account.fields.Sales_Manager__c.label}" />
+					<apex:column value="{!cust.Valid_Sites__c}" headerValue="{!$ObjectType.Account.fields.Valid_Sites__c.label}" />
+				</apex:pageBlockTable>
+			</apex:pageBlockSection>
+			
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

@@ -1,0 +1,5 @@
+<apex:page standardController="Account" extensions="SalesPipelineScatterExtension" showHeader="false" sidebar="false">
+
+    <c:SalesPipelineComponent xAxis="{!xAxisValue}" yAxis="{!yAxisValue}" markupName="{!Account.Name}"/>
+
+</apex:page>

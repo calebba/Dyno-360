@@ -1,0 +1,94 @@
+<apex:page controller="PricingRuleSearchController" >
+    <apex:form id="searchForm">
+    <apex:pageMessages id="errors" />
+    
+    <apex:sectionHeader title="{!$Label.PriceRuleSearchPage_Pricing}" subtitle="{!$Label.Price_Enquiry}"/>
+    <apex:pageBlock title="{!$Label.PriceRuleSearchPage_Search_Criteria}" id="criteria" mode="edit">
+    	<apex:actionStatus id="Generate" startText=" {!$Label.Edit_Status_Start}" />
+        <apex:pageBlockButtons location="bottom">
+        	<apex:commandButton value="{!$Label.PricingRuleSearchButtonSearch}" action="{!search}" status="Generate" rerender="searchOutput, errors"/>
+            <apex:commandButton value="{!$Label.PricingRuleSearchButtonClear}" action="{!clear}" rerender="searchForm"/>
+        </apex:pageBlockButtons>
+        
+        <apex:pageBlockSection columns="2" collapsible="false" id="criteriaSelection">   
+        
+        	<apex:pageBlockSectionItem >
+        		<apex:outputLabel value="*{!$ObjectType.Pricing_Rule__c.fields.Material_Item__c.Label}" />                                          
+        		<apex:inputField required="false" value="{!materialSelector.Material_Item__c}" />
+        	</apex:pageBlockSectionItem>
+        	<apex:pageBlockSectionItem />
+        	<apex:pageBlockSectionItem >
+                 <apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Company_Code__c.Label}"/>
+                 <apex:selectList value="{!companyCodeId}" size="1">
+                 	<apex:selectOptions value="{!companyCodeOptions}"/>
+                 	<apex:actionSupport event="onchange" rerender="criteriaSelection" status="regionStatus" />
+                 </apex:selectList>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+            	<apex:actionStatus id="regionStatus" startText="{!$Label.Price_Inquiry_Updating}" stopText="{!$ObjectType.Pricing_Rule__c.fields.Region_Site__c.Label}" />
+                <apex:selectList value="{!regionSite}" size="1" id="regionList">
+                	<apex:selectOptions value="{!regionOptions}" />
+                </apex:selectList>      		
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+            	<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Receiving_Sales_Site__c.Label}"/>
+            	<apex:inputField value="{!ruleCriteria.Receiving_Sales_Site__c}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem >
+            	<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Account__c.Label}"/>
+            	<apex:inputField value="{!ruleCriteria.Account__c}"/> 
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+            	<apex:outputLabel value="{!$ObjectType.Pricing_Rule__c.fields.Customer_Group__c.Label}" />
+           		<apex:selectList value="{!customerGroup}" required="false" size="1">
+           			<apex:selectOption itemValue="01" itemLabel="01 Wholesale" />
+           			<apex:selectOption itemValue="02" itemLabel="02 Retail" />
+           		</apex:selectList>
+           	</apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                 <apex:outputLabel value="{!$Label.Price_Enquiry_Show_History}" for="historyCheckBox"/>
+                 <apex:inputCheckBox id="historyCheckBox" value="{!includeHistory}"/>
+            </apex:pageBlockSectionItem>
+            
+      	</apex:pageBlockSection>
+	</apex:pageBlock>
+   
+    <apex:outputPanel id="searchOutput">
+    <apex:pageBlock id="PBOutput" title="{!$Label.Search_Results}" rendered="{!hasSearched}">
+    	<apex:pageBlockTable value="{!searchResults}" var="sr" id="srData" rendered="{!searchResults.size > 0}">  
+           	<apex:column value="{!materialSelector.Material_Item__c}"/>
+           	<apex:column value="{!sr.rule.Floor_Price__c}"/>
+           	<apex:column headerValue="{!$Label.Avg_Sell_Price}">
+           		<apex:outputLabel value="   " />
+				<!-- <c:AdjustCurrencyComponent CurrencyType="{!sr.rule.CurrencyIsoCode & ' '}" ConversionValue="{!sr.averageSalesPrice}"/> -->
+           	</apex:column>
+   
+           	<apex:column value="{!sr.rule.Target_Price__c}"/>
+           	<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.Per__c.Label}" value="{!sr.per}"/>
+           	<apex:column headerValue="{!$ObjectType.Pricing_Rule__c.fields.UoM__c.Label}" value="{!sr.uom}"/>    
+           	<apex:column value="{!sr.rule.Price_Valid_From__c}"/>
+           	<apex:column value="{!sr.rule.Price_Valid_To__c}"/>      
+       	</apex:pageBlockTable>    
+       	<apex:outputText rendered="{!searchResults.size == 0}">No Results.</apex:outputText>        
+	</apex:pageBlock>
+    </apex:outputPanel>
+    
+    <apex:outputPanel id="historyOutput">        
+    <apex:pageBlock id="OutputHistory" title="{!$Label.PriceRuleSearchPage_CSH}" rendered="{!AND(hasSearched,includeHistory)}">
+    	<apex:pageBlockTable value="{!customerSalesHistoryResults}" var="hr" id="hrData" rendered="{!customerSalesHistoryResults.size > 0}">  
+        	<apex:column headerValue="{!$Label.PriceRuleSearchPage_Material}" value="{!hr.material}"/>
+        	<apex:column headerValue="{!$Label.PriceRuleSearchPage_Revenue}">
+        		<c:Currency currency="{!hr.revenue}"/>
+        	</apex:column>
+        	<apex:column headerValue="{!$Label.PriceRuleSearchPage_Volume}" value="{!hr.volume}"/>
+        	<apex:column headerValue="{!$Label.PriceRuleSearchPage_UOM}" value="{!hr.uom}"/>
+        	<apex:column headerValue="{!$Label.PriceRuleSearchPage_PUOM}">
+        		<c:Currency currency="{!hr.price}"/>
+        	</apex:column>
+    	</apex:pageBlockTable>
+    	<apex:outputText rendered="{!customerSalesHistoryResults.size == 0}">{!$Label.No_Results}.</apex:outputText>            
+    </apex:pageBlock>
+    </apex:outputPanel>
+    </apex:form>
+</apex:page>

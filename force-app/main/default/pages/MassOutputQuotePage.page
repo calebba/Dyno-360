@@ -1,0 +1,144 @@
+<apex:page controller="MassQuoteOutputController" id="thePage">
+    <apex:sectionHeader title="Mass Scenario PDF Generator" />
+    
+    <apex:form id="mainForm">
+        <apex:pageMessages id="errors" />
+        
+        <apex:pageBlock title="Enter Details" mode="edit" rendered="{!NOT(batchStarted)}">
+            <apex:pageBlockSection columns="2">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="User to Receive PDFs" />
+                    <apex:inputField value="{!dummyField.OwnerId}" required="true" />               
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC" />
+                    <apex:inputTextArea value="{!ccString}" rows="3" style="width:100%;"/>              
+                </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Start Date" />
+                    <apex:inputField value="{!dummyField.Contract_Expiration__c}" required="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="End Date" />
+                    <apex:inputField value="{!dummyField.License_Expiration__c}" required="true" />             
+                </apex:pageBlockSectionItem>
+                <!--  
+                <apex:pageBlockSectionItem rendered="{!OR(isSysAdmin,$User.FirstName = 'Cathy' && $User.LastName = 'Gaudet')}">
+                    <apex:outputLabel value="Quote Owner" />
+                    <apex:inputField value="{!dummyField.Usable_Owner__c}" required="true" /> 
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem rendered="{!AND(NOT(isSysAdmin),NOT($User.FirstName = 'Cathy' && $User.LastName = 'Gaudet'))}">
+                    <apex:outputLabel value="Quote Owner" />
+                    <apex:outputField value="{!dummyField.Usable_Owner__c}" /> 
+                </apex:pageBlockSectionItem> 
+                -->
+                 <apex:pageBlockSectionItem rendered="{!OR(isSysAdmin,$User.FirstName = 'Cathy' && $User.LastName = 'Gaudet')}">
+                    <apex:outputLabel value="Quote Owner" />
+                    <apex:inputField value="{!dummyField.Account_Owner_Contact__c}" /> 
+                </apex:pageBlockSectionItem> 
+                <apex:pageBlockSectionItem rendered="{!AND(NOT(isSysAdmin),NOT($User.FirstName = 'Cathy' && $User.LastName = 'Gaudet'))}">
+                    <apex:outputLabel value="Quote Owner" />
+                    <apex:outputField value="{!dummyField.Account_Owner_Contact__c}" /> 
+                </apex:pageBlockSectionItem> 
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include Quoted" />
+                    <apex:inputCheckbox value="{!includeQ}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include Bundled" />
+                    <apex:inputCheckbox value="{!includeB}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Batch Size" />
+                    <apex:inputText value="{!batchSize}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include Volumetric" />
+                    <apex:inputCheckbox value="{!includeV}" />
+                </apex:pageBlockSectionItem>                                
+                <apex:pageBlockSectionItem >
+                    <apex:actionStatus stopText=" " startText="Searching..." id="aStatus" />
+                    <apex:commandButton action="{!generateAllQuotes}" value="Find Scenario PDFs" rerender="downloadTable" status="aStatus">
+                    </apex:commandButton>                       
+                </apex:pageBlockSectionItem>    
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="View Details" mode="edit" rendered="{!batchStarted}">
+            <apex:pageBlockSection columns="2">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="User to Receive PDFs" />
+                    <apex:outputField value="{!dummyField.OwnerId}" />              
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="CC" />
+                    <apex:inputTextArea value="{!ccString}" rows="3" disabled="true" style="width:100%;" />             
+                </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Start Date" />
+                    <apex:outputField value="{!dummyField.Contract_Expiration__c}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="End Date" />
+                    <apex:outputField value="{!dummyField.License_Expiration__c}"  />               
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Quote Owner" />
+                    <apex:outputField value="{!dummyField.Usable_Owner__c}" />                      
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include Quoted" />
+                    <apex:inputCheckbox value="{!includeQ}" disabled="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include Bundled" />
+                    <apex:inputCheckbox value="{!includeB}" disabled="true" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Batch Size" />
+                    <apex:outputText value="{!batchSize}" />
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Include Volumetric" />
+                    <apex:inputCheckbox value="{!includeV}" disabled="true" />
+                </apex:pageBlockSectionItem>                                            
+            </apex:pageBlockSection>
+        </apex:pageBlock>       
+        
+        <apex:actionStatus startText="PROCESSING...  DO NOT EMAIL THE NEXT PART UNTIL THIS MESSAGE DISAPPEARS!" stopText="" id="procStatus" startStyle="font-weight:bold;font-size:300%;text-align:center;"/>
+        <apex:pageBlock title="Download List ({!toDownload.size} PDFs available in {!updatedMax} parts)" mode="edit" id="downloadTable">
+            <apex:pageBlockTable value="{!toDownload}" var="line">              
+                <apex:column headerValue="Has Been Processed">
+                    <apex:inputCheckbox value="{!line.selected}" disabled="true">
+                        <apex:actionSupport event="onclick" rerender="downloadTable" />
+                    </apex:inputCheckbox>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandButton value="Email Selected" action="{!emailIndividualSelected}" status="procStatus"  rerender="errors, downloadTable, mainForm" disabled="{!part != 1}" /> 
+                    </apex:facet>
+                    <apex:inputCheckbox value="{!line.toPrint}">
+                        
+                    </apex:inputCheckbox>
+                    
+                </apex:column>
+                <apex:column headerValue="Scenario Name">
+                    <apex:outputLabel value="{!line.theQuote.Name}" />
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">
+                        <apex:commandButton value="Email Part {!part}" action="{!emailSelected}" status="procStatus" onclick="alert('Processing PDF Email {!part} of {!updatedMax}.  Please wait for the completion message to do the next part.');" rerender="errors, downloadTable, mainForm" /> 
+                    </apex:facet>                   
+                    <apex:outputLink value="/apex/QuoteOutputPDF?quoteID={!line.theQuote.Id}" Rendered="{!line.theQuote.Approval_Status__c == 'Approved' || line.theQuote.Approval_Status__c == 'None Needed'}" >Download</apex:outputLink>
+                    <apex:outputLink value="/apex/QuoteOutputPDFDraft?quoteID={!line.theQuote.Id}" Rendered="{!line.theQuote.Approval_Status__c != 'Approved' && line.theQuote.Approval_Status__c != 'None Needed'}" >Download</apex:outputLink>
+                
+                </apex:column>              
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

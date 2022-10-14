@@ -1,0 +1,92 @@
+<apex:page standardController="Opportunity" extensions="QuoteEditController">
+    <apex:sectionHeader title="{!$Label.Quote_Edit}"  subtitle="{!IF(isInsert, $Label.New_Quote, theQuote.Name)}"/>
+    <apex:form id="theForm">
+    <apex:pageMessages />
+        
+        <apex:outputPanel id="ValidUserCheck" rendered="{!isValidUser}">
+        <apex:pageBlock title="{!$Label.QP_Information}" mode="edit" id="thePBS">
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="{!$Label.Button_Save}" onclick="this.disabled=true;" action="{!performSave}" rerender="theForm" status="buttonStatus" />
+                <apex:commandButton value="{!$Label.Button_SaveNew}" onclick="this.disabled=true;" action="{!performSaveAndNew}" rerender="theForm" />
+                <apex:commandButton value="{!$Label.Button_Cancel}"  action="{!cancel}"/>
+                &nbsp;&nbsp;<b><apex:actionStatus id="buttonStatus" startText="{!$Label.Operation_In_Progress}" stopText="" /></b>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection id="thePBS" columns="2">
+                <apex:pageBlockSectionItem id="thePBS3">
+                        <apex:outputLabel value="Account" />
+                        <apex:actionRegion >
+                        
+                        <apex:inputField value="{!theQuote.AccountId}" required="true">
+                            <apex:actionSupport event="onchange" action="{!revertSelected}" reRender="thePBS2" />
+                        </apex:inputField>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                
+                
+
+
+            </apex:pageBlockSection>
+            
+            
+            <apex:pageBlockSection id="thePBS2" columns="2">
+            <apex:pageBlockSectionItem >
+              <apex:outputLabel value="{!$ObjectType.Customer_Sales_Site__c.fields.Sales_Site__c.label}"  />
+                    <apex:outputPanel layout="block" styleClass="requiredInput"><apex:outputPanel layout="block" styleClass="requiredBlock"></apex:outputPanel>
+                    <apex:selectList value="{!siteChoice}" id="salesSiteList" size="1" required="true">
+                        <apex:selectOptions value="{!customerSites}" />
+                    </apex:selectList>
+                    </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem id="blockPR" rendered="true">
+                <apex:outputLabel value="Pricing Region"  />
+                        <apex:selectList id="PricingRegionsSelect" value="{!PricingRegion}"size="1" required="true" >
+                        <apex:selectOptions value="{!PricingRegions}"/>
+                    </apex:selectList>
+                   </apex:pageBlockSectionItem>
+                    
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="thePBS4" columns="2">
+                <apex:inputField value="{!theQuote.CloseDate}" required="true" />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.QuoteCreateWinLoss}" rendered="{!NOT(ISNULL(theQuote.Id))}">
+                <apex:inputField value="{!theQuote.StageName}" />
+                <apex:inputField value="{!theQuote.Probability}" />
+                <apex:inputField value="{!theQuote.Reason__c}" />
+                <apex:inputField value="{!theQuote.Who_Won__c}" />
+                <apex:inputField value="{!theQuote.Comments__c}" style="width:150%;" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="{!$Label.QP_Details}">
+                <apex:inputField value="{!theScenario.Quote_Valid_From__c}"  required="true" />
+                <apex:inputField value="{!theScenario.Quote_Valid_To__c}"  required="true" />
+                <apex:inputField value="{!theScenario.Price_Valid_From__c}"  required="true" />
+                <apex:inputField value="{!theScenario.Price_Valid_To__c}"  required="true" />
+                <apex:inputField value="{!theScenario.Quote_Description__c}" style="width:200%;"  required="true" />
+                <apex:outputLabel value=" " />
+                <apex:inputField value="{!theScenario.Promotional__c}"  required="false" />
+                <apex:inputField value="{!theScenario.Trial__c}" required="false"  />
+                <apex:inputField value="{!theScenario.Volumetric_Parent_Product__c}" rendered="{!isVolumetric}" required="{!isVolumetric}" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="{!$Label.QP_Bundled}" rendered="{!renderBundled}" id="bundledSect">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.QP_Scenario}" />
+                    <apex:outputPanel layout="block" styleClass="requiredInput"><apex:outputPanel layout="block" styleClass="requiredBlock"></apex:outputPanel>
+                    <apex:selectList size="1" value="{!theQuote.Scenario_Choice__c}">
+                        <apex:selectOption itemValue="Delivery" itemLabel="{!$Label.QP_Delivery}" />
+                        <apex:selectOption itemValue="Loading_Assist" itemLabel="{!$Label.QP_Loading}" />
+                        <apex:selectOption itemValue="Shot_Service" itemLabel="{!$Label.QP_SS}" />
+                        <apex:selectOption itemValue="Shot_Service_with_Drilling" itemLabel="{!$Label.QP_SSwD}" />  
+                        <apex:actionSupport event="onchange" rerender="holeSizeField" />                                            
+                    </apex:selectList>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel id="holeSizeField" value="{!IF(theQuote.Scenario_Choice__c = 'Shot Service with Drilling', '*', '')}{!$Label.QP_Hole}" />
+                    <apex:inputField value="{!theQuote.Hole_Size__c}" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:outputPanel>
+    </apex:form>
+</apex:page>

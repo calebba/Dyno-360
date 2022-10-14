@@ -1,0 +1,71 @@
+<apex:page standardController="Opportunity" extensions="ExtendToSalesSitesController">
+    <apex:sectionHeader title="{!$Label.QP_Quote}" subtitle="{!$Label.Extend_Quote_Subtitle}"/>
+    <!--  RPN jan 16 2012 commented out to allow date pickers to display
+    <script type="text/javascript">
+        window.onload = function() {
+            document.getelementbyid('{!$component.starterfield}').focus();
+        }
+    </script>
+    -->
+    <apex:form >
+    <apex:pageMessages id="errors" />
+    <apex:pageBlock mode="maindetail" id="mainSection">
+        <apex:pageBlockButtons location="both">
+            <apex:commandButton value="{!$Label.Button_Save}" onclick="this.disabled=true;" oncomplete="this.disabled=false;" rerender="errors, mainSection" action="{!extend}" status="cloneStatus" />
+            <apex:commandButton value="{!$Label.Button_Cancel}" action="{!cancel}"/>
+            &nbsp;&nbsp;<b><apex:actionStatus id="cloneStatus" startText="{!$Label.Operation_In_Progress}" stopText="" /></b>
+        </apex:pageBlockButtons>
+        
+        <apex:pageBlockSection columns="2" title="{!$Label.Extend_QD}" collapsible="false">
+            <apex:outputField value="{!Opportunity.Name}"/>
+            <apex:outputField value="{!Opportunity.AccountId}"/>
+            <apex:outputField value="{!Opportunity.Sales_Site__c}"/>
+        </apex:pageBlockSection>
+                            
+        <apex:pageBlockSection columns="2" title="{!$Label.QGP_Validity_Dates}" collapsible="false">
+            <apex:inputField value="{!quote.Quote_Valid_From__c}"/> 
+           <apex:inputField value="{!quote.Quote_Valid_To__c}"/> 
+            <apex:inputField value="{!quote.Price_Valid_From__c}" id="starterfield"/>
+            <apex:inputField value="{!quote.Price_Valid_To__c}"/>
+            <apex:outputLabel value=" " /> 
+        </apex:pageBlockSection>
+        
+        <apex:pageBlockSection columns="4" title="{!$Label.Extend_CC}" collapsible="false">
+            <apex:inputField value="{!opp.AccountId}">
+                <apex:actionSupport event="onchange" action="{!determineExtendedSites}" rerender="prChooser,siteChooser" />
+            </apex:inputField>
+            <apex:outputLabel value=" " />
+            <apex:outputLabel value=" " />
+            <apex:outputLabel value=" " />
+        </apex:pageBlockSection>  
+        
+        <apex:pageBlockSection columns="1" title="{!$Label.Extend_Choose}" collapsible="false" id="siteChooser" rendered="{!NOT(ISNULL(opp.AccountId))}">
+            <apex:pageMessages id="errors" />
+            <apex:pageBlockTable value="{!extendedSites}" var="site">
+                <apex:column width="10%" headerValue="Select">
+                    <apex:inputCheckbox value="{!site.selected}" />
+                </apex:column>
+                <apex:column value="{!site.site.Name}"/>
+                
+            </apex:pageBlockTable>
+          
+        </apex:pageBlockSection>
+        
+        <apex:pageBlockSection columns="4" title="Select Pricing Region - Use for 2014 Pricing" collapsible="false" id="prChooser" rendered="false">
+           <apex:pageBlockSectionItem >
+             <apex:outputLabel value="Pricing Region" for="PricingRegionsSelect" />
+                        <apex:selectList id="PricingRegionsSelect" value="{!PricingRegion}"size="1" required="true" >
+                        <apex:selectOptions value="{!PricingRegions}"/>
+                    </apex:selectList>
+                    </apex:pageBlockSectionItem>
+         </apex:pageBlockSection>
+         
+         <apex:pageBlockSection columns="4" title="Pricing Sales Office - Use for 2015 Pricing" collapsible="false" id="soChooser" rendered="false">
+           <apex:pageBlockSectionItem >
+            <apex:inputText value="{!PricingSalesOffice}" id="PricingSalesOffice"/>
+           </apex:pageBlockSectionItem>
+         </apex:pageBlockSection>
+
+    </apex:pageBlock>
+    </apex:form>
+</apex:page>

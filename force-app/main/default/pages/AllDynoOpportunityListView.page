@@ -1,0 +1,3 @@
+<apex:page >
+    <apex:enhancedList type="Dyno_Opportunity__c" height="300" rowsPerPage="10" id="Dyno_Opportunities"  customizable="True" />
+</apex:page>

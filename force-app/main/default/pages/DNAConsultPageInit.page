@@ -1,0 +1,6 @@
+<apex:page controller="DNAConsultPageController" tabStyle="Account" title="Consulting Services Reporting" action="{!redirect}">
+    <apex:sectionHeader title="Report Form" subtitle="Jump Page"/>
+    <apex:pageBlock >
+        <BIG><B>You should not see this page.  If you are reading this, please let Rick Nash know.</B></BIG>
+    </apex:pageBlock>
+</apex:page>

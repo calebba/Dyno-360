@@ -1,0 +1,143 @@
+		@page {
+			margin-top: 44%;
+			margin-bottom: 20%;
+			@top-center {
+				content: element(header);
+			}
+			@bottom-left {
+				content: element(footer);
+			}
+		}
+		
+		div.header {
+			position: running(header);
+		}
+
+ 		div.footer {
+			position: running(footer);
+		}
+		
+		table.typeOne {
+			width:100%;
+			border-width:2px;
+			border-color:black;
+			border-collapse:collapse;
+			padding-bottom:3px;
+		}
+		
+		table.typeTwo {
+			width:100%;
+			border-color:black;
+			font-size:70%;
+			border-collapse:collapse;
+		}
+		
+		table.typeThree {
+			width:100%;
+		}
+		
+		table.typeFour {
+			width:100%;
+			border-width:2px;
+			border-color:black;
+			border-style:none;		
+		}
+		
+		td.typeOne {
+			border-style:solid none solid solid;
+		}
+		
+		td.typeTwo {
+			vertical-align:top;
+			padding-top:5px;
+			border-style:solid solid solid none;
+		}
+		
+		td.typeThree {
+			border-style:solid;
+			vertical-align:top;
+			padding-top:5px;
+			font-size:85%;
+		}
+		
+		td.typeFour {
+			border-width:2px;
+			border-style:solid;
+			padding:2px;
+		}
+		
+		div.typeOne {
+			font-size:85%;
+			padding-top:5px;
+		}
+		
+		div.typeTwo {
+			font-size:115%;
+			font-weight:bold;
+			padding-top:5px;
+		}
+		
+		div.typeThree {
+			font-size:95%;
+			font-weight:bold;
+			padding-top:5px;
+		}
+		
+		div.typeFour {
+			font-size:95%;
+			padding-top:5px;
+		}
+		
+		div.typeFive {
+			font-size:95%;
+		}
+		
+		div.typeSix {
+			font-size:95%;
+			padding-bottom:5px;
+		}
+		
+		div.typeSeven {
+			padding-right:46px;
+			padding-top:15px;
+			font-size:65%;
+		}
+		
+		div.typeEight {
+			padding-right:26px;
+			padding-top:15px;
+			font-size:65%;
+		}
+		
+		div.typeNine {
+			padding-top:5px;
+			font-weight:bold;
+		}
+		
+		div.typeTen {
+			font-size:85%;
+			font-style:italic;
+			display:inline;
+		}
+		
+		div.typeEleven {
+			font-size:85%;
+			display:inline;
+			padding-left:472px;
+		}
+		
+		label.keepInline {
+			display:inline;
+		}
+		
+		img.padded {
+			padding-bottom:2px;
+		}
+		
+ 		.pagenumber:before {
+			content: counter(page);
+		}
+
+		.pagecount:before {
+			content: counter(pages);
+		} 
